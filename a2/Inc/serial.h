@@ -18,15 +18,9 @@ typedef struct _SerialPort {
 	volatile uint32_t SerialPinAlternatePinValueLow;
 	volatile uint32_t SerialPinAlternatePinValueHigh;
 	void (*completion_function)(uint32_t);
+	void (*read_complete)(uint8_t*, uint32_t);
 } SerialPort;
 
-
-// make any number of instances of the serial port (they are extern because
-//   they are fixed, unique values)
-extern SerialPort USART1_PORT;
-
-
-// The user might want to select the baud rate
 enum {
   BAUD_9600,
   BAUD_19200,
@@ -35,21 +29,32 @@ enum {
   BAUD_115200
 };
 
- 
-// SerialInitialise - initialise the serial port
-// Input: baud rate as defined in the enum
-void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*completion_function)(uint32_t) );
- 
+void init_usart();
+
+// init_serial - Initialise the serial port
+// baud_rate:           Port baud rate as specified by an enum (TODO: change)
+// serial_port:         Port register information
+// completion_function: Function to execute when completing serial output,
+//                      takes in the number of bytes sent.
+void init_serial_port_16bit(uint32_t baud_rate,
+				            SerialPort* serial_port,
+					        void (*completion_function)(uint32_t),
+							void (*read_complete)(uint8_t*, uint32_t));
+
+int serial_read_until_terminator(uint8_t     terminator,
+								  uint8_t*    buffer,
+								  uint32_t    buffer_size,
+								  SerialPort* serial_port);
 
 // SerialOutputChar - output a char to the serial port
 //  note: this version waits until the port is ready (not using interrupts)
 // Input: char to be transferred
-void SerialOutputChar(uint8_t, SerialPort *serial_port);
- 
+void serial_write_char(uint8_t data, SerialPort* serial_port);
 
 // SerialOutputString - output a NULL TERMINATED string to the serial port
 // Input: pointer to a NULL-TERMINATED string (if not null terminated, there will be problems)
-void SerialOutputString(uint8_t *pt, SerialPort *serial_port);
- 
- 
-#endif
+void SerialOutputString(uint8_t* pt, SerialPort* serial_port);
+
+void test_serial();
+
+#endif // SERIAL_PORT_HEADER

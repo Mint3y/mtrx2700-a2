@@ -1,0 +1,6 @@
+../Src/serial.c:3:6:init_usart	1
+../Src/serial.c:14:6:init_serial_port_16bit	6
+../Src/serial.c:63:5:serial_read_until_terminator	4
+../Src/serial.c:98:6:serial_write_char	2
+../Src/serial.c:105:6:SerialOutputString	2
+../Src/serial.c:117:6:test_serial	1
