@@ -16,4 +16,4 @@ Marilyn:   Part 3 (Timer Interface)
 - Group chat via Discord
 - Setup GitHub repository
 - Began work on individual parts
-- Arranged a meeting on 9th of April Wednesday 3pm
+- Arranged a meeting on 9th of April Wednesday 10-3pm
