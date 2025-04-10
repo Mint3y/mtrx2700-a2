@@ -12,4 +12,5 @@ Jianze: Finish part c and d
 
 ## Summary
 - Sunday discord call 3:00pm
-- Wednesday meeting before 3:00pm    
+- Wednesday meeting before 3:00pm
+   
