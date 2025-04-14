@@ -86,7 +86,7 @@ void one_shot_pattern(uint8_t *led_pattern){
 
 // LED should blink every 1 second
 
-int main(void)
+int timer_main(void)
 {
 
 

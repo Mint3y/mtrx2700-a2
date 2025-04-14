@@ -26,7 +26,8 @@
 
 
 int main(void) {
-	test_serial();
+//    test_serial();
+	test_serial_interrupt();
 
     /* Loop forever */
 	for(;;);

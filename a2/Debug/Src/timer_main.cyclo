@@ -1,0 +1,6 @@
+../Src/timer_main.c:33:6:enable_clocks	1
+../Src/timer_main.c:45:6:initialise_board	1
+../Src/timer_main.c:55:6:trigger_prescaler	1
+../Src/timer_main.c:68:6:change_pattern	1
+../Src/timer_main.c:75:6:one_shot_pattern	1
+../Src/timer_main.c:89:5:timer_main	4
