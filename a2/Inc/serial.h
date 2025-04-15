@@ -18,8 +18,17 @@ typedef struct _SerialPort {
 	volatile uint32_t SerialPinAlternatePinValueLow;
 	volatile uint32_t SerialPinAlternatePinValueHigh;
 	void (*completion_function)(uint32_t);
-	void (*read_complete)(uint8_t*, uint32_t);
+	void (*read_complete)(char*, uint32_t);
 } SerialPort;
+
+#define SERIAL_BUFFER_SIZE 1024
+#define SERIAL_TERMINATOR '*'
+typedef struct _SerialPortBuffer {
+	char* buffer[SERIAL_BUFFER_SIZE];
+	uint32_t index;
+	uint32_t length;
+	bool ready;
+} SerialPortBuffer;
 
 enum {
   BAUD_9600,
@@ -29,7 +38,29 @@ enum {
   BAUD_115200
 };
 
+/// Initialises the serial module. Should be called before using any serial
+/// functions.
+void init_serial();
+
+/// Begins transmission of a string through USART1.
+/// @param data The string to transmit
+/// @param length The length of the string to transmit
+void transmit_string(char* data, uint32_t length);
+
+/// Enable clock power and system configuration clock.
 void init_usart();
+
+/// Enables interrupt requests for USART1.
+void enable_usart1_interrupts();
+
+/// Enables triggering interrupts when USART1 receives a byte.
+void enable_usart1_receive_interrupt();
+
+/// Enables triggering interrupts when USART1 transmits a byte.
+void enable_usart1_transmit_interrupt();
+
+/// Disables triggering interrupts when USART1 transmits a byte.
+void disable_usart1_transmit_interrupt();
 
 // init_serial - Initialise the serial port
 // baud_rate:           Port baud rate as specified by an enum (TODO: change)
@@ -42,19 +73,21 @@ void init_serial_port_16bit(uint32_t baud_rate,
 							void (*read_complete)(uint8_t*, uint32_t));
 
 int serial_read_until_terminator(uint8_t     terminator,
-								  uint8_t*    buffer,
-								  uint32_t    buffer_size,
-								  SerialPort* serial_port);
+								 uint8_t*    buffer,
+								 uint32_t    buffer_size,
+							     SerialPort* serial_port);
 
 // SerialOutputChar - output a char to the serial port
 //  note: this version waits until the port is ready (not using interrupts)
 // Input: char to be transferred
-void serial_write_char(uint8_t data, SerialPort* serial_port);
+void serial_write_char(char data, SerialPort* serial_port);
 
 // SerialOutputString - output a NULL TERMINATED string to the serial port
 // Input: pointer to a NULL-TERMINATED string (if not null terminated, there will be problems)
-void SerialOutputString(uint8_t* pt, SerialPort* serial_port);
+void SerialOutputString(char* pt, SerialPort* serial_port);
 
 void test_serial();
+
+void test_serial_interrupt();
 
 #endif // SERIAL_PORT_HEADER
