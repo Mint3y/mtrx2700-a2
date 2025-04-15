@@ -1,31 +1,39 @@
 #include "parser.h"
 
-int32_t string_find(char* data, char terminator) {
-	// Iterate until terminator or end of string character
-	uint32_t i = 0;
-	while (*data != terminator && *data != '\0') {
-		++i;
-		++data;
+// Finds a character in a string. Stops at given length.
+// data:       The string
+// length:     The maximum length to search
+// terminator: The character to find
+// Returns the index of the terminator or length if terminator was not found
+uint32_t string_find(char* data, uint32_t length, char terminator) {
+	// Iterate string
+	for (int i = 0; i < length; ++i) {
+		// Terminator was found
+		if (data[i] == terminator) {
+			return i;
+		}
 	}
 
-	// Terminator was not found, reached end of string
-	if (*data == '\0' && terminator != '\0') {
-		return REACHED_END_OF_STRING;
-	}
-
-	return i;
+	return length;
 }
 
-bool starts_with(char* data, uint32_t length, char* prefix) {
+// Checks if a string starts with a prefix
+// data:          The string
+// length:        The length of the string
+// prefix:        The prefix to compare the string with
+// prefix_length: The length of the prefix
+// Returns true if the string starts with the prefix, otherwise false
+bool starts_with(char* data,
+				 uint32_t length,
+				 char* prefix,
+				 uint32_t prefix_length) {
 	// Prefix is longer than string
-	uint32_t prefix_length = string_find(prefix, '\0');
 	if (prefix_length > length) {
 		return false;
 	}
 
-	// End index is the shorter of the two lengths
-	uint32_t end = length > prefix_length ? prefix_length : length;
-	for (int i = 0; i < end; ++i) {
+	// See if prefix matches start of string
+	for (int i = 0; i < prefix_length; ++i) {
 		if (data[i] != prefix[i]) {
 			return false;
 		}
@@ -35,24 +43,37 @@ bool starts_with(char* data, uint32_t length, char* prefix) {
 	return true;
 }
 
-enum command_type parse_command_type(char* data) {
+// Parses a string to determine the command type
+// data: The string
+// length: The length of the string
+// Returns the command type or INVALID if none were parsed
+enum command_type parse_command_type(char* data, uint32_t length) {
 	// Get the length of the first word in the string
-	uint32_t first_word_length = string_find(data, COMMAND_ARG_SPLIT);
-	if (first_word_length == REACHED_END_OF_STRING) {
-		return INVALID;
-	}
+	uint32_t first_word_length = string_find(data, length, COMMAND_ARG_SPLIT);
 
 	// Determine the command type using prefixes
-	if (starts_with(data, first_word_length, LED_COMMAND)) {
+	if (starts_with(data,
+					first_word_length,
+					LED_COMMAND_NAME,
+					LED_COMMAND_NAME_LENGTH)) {
 		return SET_LED;
 	}
-	else if (starts_with(data, first_word_length, SERIAL_COMMAND)) {
+	else if (starts_with(data,
+						 first_word_length,
+						 SERIAL_COMMAND_NAME,
+						 SERIAL_COMMAND_NAME_LENGTH)) {
 		return SERIAL_ECHO;
 	}
-	else if (starts_with(data, first_word_length, ONESHOT_COMMAND)) {
+	else if (starts_with(data,
+						 first_word_length,
+						 ONESHOT_COMMAND_NAME,
+						 ONESHOT_COMMAND_NAME_LENGTH)) {
 		return TRIGGER_ONESHOT;
 	}
-	else if (starts_with(data, first_word_length, ONESHOT_COMMAND)) {
+	else if (starts_with(data,
+						 first_word_length,
+						 TIMER_COMMAND_NAME,
+						 TIMER_COMMAND_NAME_LENGTH)) {
 		return SET_TIMER;
 	}
 
@@ -60,9 +81,14 @@ enum command_type parse_command_type(char* data) {
 	return INVALID;
 }
 
-int16_t parse_led_arg(char* data) {
-	// Ensure argument is 8 characters ('bits') long
-	if (string_find(data, '\0') != LED_ARG_LENGTH) {
+// Parses the LED command arguments from a string to a binary number.
+// args: The arguments
+// length: The length of the arguments
+// Returns the 8 bit number representing the parsed argument or a 9 bit number
+// if parsing failed
+int16_t parse_led_arg(char* args, uint32_t length) {
+	// Ensure argument is exactly 8 characters ('bits') long
+	if (length != LED_ARG_LENGTH) {
 		return PARSE_LED_ARG_FAIL; // Return 9 bits of data
 	}
 
@@ -71,12 +97,12 @@ int16_t parse_led_arg(char* data) {
 	int16_t result = 0;
 	while (i < LED_ARG_LENGTH) {
 		// String is '1', set the i'th bit of the result
-		if (data[i] == '1') {
+		if (args[i] == '1') {
 			result |= 1 << (LED_ARG_LENGTH - 1 - i);
 		}
 
 		// String was not '1' or '0'
-		else if (data[i] != '0') {
+		else if (args[i] != '0') {
 			return PARSE_LED_ARG_FAIL;
 		}
 	}
@@ -84,42 +110,113 @@ int16_t parse_led_arg(char* data) {
 	return result;
 }
 
-void parse_string(char* data, uint32_t length) {
+// Parses the string as an unsigned int. Assumes base 10
+// data:   The string
+// length: The length of the string
+// Returns the number as a decimal or INT_PARSING_FAIL if parsing failed
+int32_t parse_unsigned_int(char* data, uint32_t length) {
+	uint32_t base = 10;
+	uint32_t digit = 1;
+	int32_t result = 0;
+
+	// Iterate string backwards
+	for (int i = length - 1; i >= 0; --i) {
+		// String is not numeric
+		if (data[i] < '0' || data[i] > '9') {
+			return INT_PARSING_FAIL;
+		}
+
+		// Sum digits, take into account digit multiplier
+		result += digit * (data[i] - '0');
+		digit *= base;
+	}
+
+	return result;
+}
+
+// The LED command.
+// args: The LED command arguments
+// length: The length of the command arguments
+void led_command(char* args, uint32_t length) {
+	// Validate led argument
+	int16_t led_arg = parse_led_arg(args, length);
+	if (led_arg == PARSE_LED_ARG_FAIL) {
+		// Display a debug message and set LEDs to 0x00 (maybe we dont do this)
+		// alternative debug: have all leds flash 3 times before reverting to their previous state
+		// TODO
+	}
+
+	// Set LEDs
+	// TODO
+}
+
+// The echo command.
+// buf: The serial port buffer
+void echo_command(SerialPortBuffer* buf) {
+	// Echo TODO
+
+
+
+}
+
+// The oneshot command.
+// args: The oneshot command arguments
+// length: The length of the command arguments
+void oneshot_command(char* args, uint32_t length) {
+	// Oneshot TODO
+
+
+	// pls use parse_unsigned_int(char* data)
+
+
+}
+
+// The timer command.
+// args: The timer command arguments
+// length: The length of the command arguments
+void timer_command(char* args, uint32_t length) {
+	// Set timer TODO
+
+
+
+	// pls use parse_unsigned_int(char* data)
+
+
+
+}
+
+// Parses a string and runs any associated commands. Intended to be used as
+// the serial read completion function.
+// buf: The serial port buffer
+void parse_string(SerialPortBuffer* buf) {
 	// Validate command type
-	enum command_type type = parse_command_type(data);
+	enum command_type type = parse_command_type(buf->data, buf->length);
 	if (type == INVALID) {
 		return;
 	}
 
-	// Obtain start of command arguments
-	char* command_args = data + string_find(data, COMMAND_ARG_SPLIT);
-
 	// Execute the command based on type
 	switch (type) {
-	case SET_LED: {
-		// Validate led argument
-		int16_t led_arg = parse_led_arg(command_args);
-		if (led_arg == PARSE_LED_ARG_FAIL) {
-			// Display a debug message and set LEDs to 0x00
-			// TODO
-		}
-
-		// Set LEDs
-		// TODO
-
+	case SET_LED:
+		led_command(buf->data + LED_COMMAND_NAME_LENGTH,
+					buf->length - LED_COMMAND_NAME_LENGTH);
+		buf->ready = true;
 		break;
-	}
 
 	case SERIAL_ECHO:
-		// Echo TODO
+		echo_command(buf);
 		break;
 
 	case TRIGGER_ONESHOT:
-		// Trigger TODO
+		oneshot_command(buf->data + ONESHOT_COMMAND_NAME_LENGTH,
+					    buf->length - ONESHOT_COMMAND_NAME_LENGTH);
+		buf->ready = true;
 		break;
 
 	case SET_TIMER:
-		// Set timer TODO
+		timer_command(buf->data + TIMER_COMMAND_NAME_LENGTH,
+					  buf->length - TIMER_COMMAND_NAME_LENGTH);
+		buf->ready = true;
 		break;
 	}
 }

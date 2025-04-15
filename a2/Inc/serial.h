@@ -17,20 +17,25 @@ typedef struct _SerialPort {
 	volatile uint32_t SerialPinSpeedValue;
 	volatile uint32_t SerialPinAlternatePinValueLow;
 	volatile uint32_t SerialPinAlternatePinValueHigh;
-	void (*completion_function)(uint32_t);
-	void (*read_complete)(char*, uint32_t);
+	void (*read_complete)(SerialPortBuffer*); // When executed this function 
+											  // should mark buffer as ready
+											  // for future use
+	void (*write_complete)(SerialPortBuffer*); // Executed at end of transmission
 } SerialPort;
 
 #define SERIAL_BUFFER_SIZE 1024
 #define SERIAL_TERMINATOR '*'
-typedef struct _SerialPortBuffer {
-	char* buffer[SERIAL_BUFFER_SIZE];
-	uint32_t index;
-	uint32_t length;
-	bool ready;
+
+// Serial buffer capable of being used for both receiving and transmitting
+typedef struct _SerialPortBuffer {        // Used for receiving      / Used for transmitting
+	char buffer[SERIAL_BUFFER_SIZE];      // Buffer to read to       / Buffer to write from
+	struct _SerialPortBuffer* buffer_ref; // NOT USED                / Buffer reference
+	uint32_t index;					      // Number of bytes read    / Number of bytes written
+	uint32_t length;				      // Length of buffer (1024) / Length to write
+	bool ready;                           // Buffer is not reading   / Buffer is not writing
 } SerialPortBuffer;
 
-enum {
+enum BaudRate {
   BAUD_9600,
   BAUD_19200,
   BAUD_38400,
@@ -38,53 +43,71 @@ enum {
   BAUD_115200
 };
 
-/// Initialises the serial module. Should be called before using any serial
-/// functions.
+// Initialises the serial module. Should be called before using any serial
+// functions.
 void init_serial();
 
-/// Begins transmission of a string through USART1.
-/// @param data The string to transmit
-/// @param length The length of the string to transmit
-void transmit_string(char* data, uint32_t length);
-
-/// Enable clock power and system configuration clock.
+// Enables clock power and system configuration clock. TODO move to init.h
 void init_usart();
 
-/// Enables interrupt requests for USART1.
-void enable_usart1_interrupts();
-
-/// Enables triggering interrupts when USART1 receives a byte.
-void enable_usart1_receive_interrupt();
-
-/// Enables triggering interrupts when USART1 transmits a byte.
-void enable_usart1_transmit_interrupt();
-
-/// Disables triggering interrupts when USART1 transmits a byte.
-void disable_usart1_transmit_interrupt();
-
-// init_serial - Initialise the serial port
+// Initialises a serial port.
 // baud_rate:           Port baud rate as specified by an enum (TODO: change)
 // serial_port:         Port register information
 // completion_function: Function to execute when completing serial output,
 //                      takes in the number of bytes sent.
-void init_serial_port_16bit(uint32_t baud_rate,
+void init_serial_port_16bit(enum BaudRate baud_rate,
 				            SerialPort* serial_port,
-					        void (*completion_function)(uint32_t),
-							void (*read_complete)(uint8_t*, uint32_t));
+							void (*read_complete)(SerialPortBuffer*));
 
-int serial_read_until_terminator(uint8_t     terminator,
-								 uint8_t*    buffer,
-								 uint32_t    buffer_size,
-							     SerialPort* serial_port);
+// Enables interrupt requests for USART1.
+void enable_usart1_interrupts();
 
-// SerialOutputChar - output a char to the serial port
-//  note: this version waits until the port is ready (not using interrupts)
-// Input: char to be transferred
+// Enables triggering interrupts when USART1 receives a byte.
+void enable_usart1_receive_interrupt();
+
+// Enables triggering interrupts when USART1 transmits a byte.
+void enable_usart1_transmit_interrupt();
+
+// Disables triggering interrupts when USART1 transmits a byte.
+void disable_usart1_transmit_interrupt();
+
+// Gets a pointer to the next open transmit buffer. A transmission buffer is 
+// considered open if it is not filled nor immediately transmitting. Marks the
+// obtained buffer as unready (i.e closed).
+// Returns the open transmit buffer or NULL if none were available
+SerialPortBuffer* get_open_transmit_buffer();
+
+// Sets the transmit completion function for the USART1 Port
+// write_completion: The completion function
+void set_write_completion(void write_completion(SerialPortBuffer*));
+
+// Begins transmission of the string stored in the ready transmission buffer.
+// Via USART1
+void begin_transmit_ready();
+
+// Default callback for write completion
+// buf: The transmit buffer that finished transmitting
+void default_write_completion(SerialPortBuffer* buf);
+
+// Naive polling implementation of serial read.
+// terminator:  The terminating character to read until
+// buf:         The buffer to read into
+// serial_port: The port to read from
+int serial_read_until_terminator(uint8_t     	  terminator,
+								 SerialPortBuffer buf,
+		                         SerialPort* 	  serial_port);
+
+// Naively writes a char to a serial port. Waits for transmit buffer to be
+// empty with a while loop.
+// data: 		The char to write
+// serial_port: The port to write to
 void serial_write_char(char data, SerialPort* serial_port);
 
-// SerialOutputString - output a NULL TERMINATED string to the serial port
-// Input: pointer to a NULL-TERMINATED string (if not null terminated, there will be problems)
-void SerialOutputString(char* pt, SerialPort* serial_port);
+// Naively writes a string to a serial port.
+// data:        The string to write
+// length:      The length of the string
+// serial_port: The port to write to
+void serial_write_string(char* data, uint32_t length, SerialPort* serial_port);
 
 void test_serial();
 
