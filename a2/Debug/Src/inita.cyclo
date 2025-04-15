@@ -1,0 +1,6 @@
+C:/Users/user/Desktop/stm32f303-definitions/Core/Inc/core_cm4.h:1688:22:__NVIC_EnableIRQ	2
+C:/Users/user/Desktop/stm32f303-definitions/Core/Inc/core_cm4.h:1816:22:__NVIC_SetPriority	2
+../Src/inita.c:6:6:enable_clocks	1
+../Src/inita.c:12:6:initialise_board	1
+../Src/inita.c:18:6:enable_interrupt	1
+../Src/inita.c:45:6:EXTI0_IRQHandler	2
