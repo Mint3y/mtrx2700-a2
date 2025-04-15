@@ -16,35 +16,35 @@ static SerialPort USART1_PORT = {
 };
 
 static struct {
-	SerialPortBuffer* active_buffer;
-	SerialPortBuffer* inactive_buffer;
+	SerialPortBuffer* ready_buffer;
+	SerialPortBuffer* unready_buffer;
 	SerialPortBuffer buffers[2];
 } USART1_RECEIVE;
 
 static struct {
-	SerialPortBuffer* active_buffer;
-	SerialPortBuffer* inactive_buffer;
-	SerialPortBuffer buffers[2];
+	SerialPortBuffer buffer;
 } USART1_TRANSMIT;
 
+/// Initialises the serial module. Should be called before using any serial
+/// functions.
 void init_serial() {
-	USART1_RECEIVE.active_buffer = &USART1_RECEIVE.first;
-	USART1_RECEIVE.inactive_buffer = &USART1_RECEIVE.second;
+	// Initialise receive buffers
+	USART1_RECEIVE.ready_buffer = USART1_RECEIVE.buffers;
+	USART1_RECEIVE.unready_buffer = USART1_RECEIVE.buffers + 1;
 	USART1_RECEIVE.buffers = (SerialPortBuffer[]){
 	    (SerialPortBuffer){{0}, 0, SERIAL_BUFFER_SIZE, true},
 	    (SerialPortBuffer){{0}, 0, SERIAL_BUFFER_SIZE, true}
 	};
 
-	USART1_TRANSMIT.active_buffer = &USART1_TRANSMIT.first;
-	USART1_TRANSMIT.inactive_buffer = &USART1_TRANSMIT.second;
-	USART1_TRANSMIT.buffers = (SerialPortBuffer[]){
-	    (SerialPortBuffer){{0}, 0, 0, true},
-	    (SerialPortBuffer){{0}, 0, 0, true}
-	};
+	// Initialise transmit buffer
+	USART1_TRANSMIT.buffer = (SerialPortBuffer){{0}, 0, 0, true};
 }
 
+/// PRIVATE
+/// Receives a byte from USART1 RDR. Assumes RDR is not empty and result is
+/// stored in a SerialPortBuffer.
 void receive_byte() {
-	SerialPortBuffer* buf = &(USART1_RECEIVE.active_buffer);
+	SerialPortBuffer* buf = &(USART1_RECEIVE.ready_buffer);
 
 	// Clear overrun and frame errors
 	USART1_PORT.UART->ICR |= USART_ICR_ORECF | USART_ICR_FECF;
@@ -57,40 +57,86 @@ void receive_byte() {
 	// Read to the USART1 receive buffer
 	buf->buffer[buf->index] = (char)USART1_PORT.UART->RDR;
 	++(buf->index);
-	serial_write_char(buf->buffer[buf->index - 1], &USART1_PORT);
+	// TODO removeserial_write_char(buf->buffer[buf->index - 1], &USART1_PORT);
 
 	// Next character is a terminator
 	if (USART1_PORT.UART->RDR == SERIAL_TERMINATOR) {
 		// Activate read completion callback
 		USART1_PORT.read_complete(buf->buffer,
 				                  buf->index);
+
+		// Swap buffers
+		USART1_RECEIVE.unready_buffer = buf;
+		USART1_RECEIVE.ready_buffer = USART1_RECEIVE.unready_buffer;
+
 		buf->index = 0;
 	}
 }
 
+/// PRIVATE
+/// Transmits a byte by writing to USART1 TDR. Assumes TDR is empty and
+/// transmits from a buffer stored within a module SerialPortBuffer
 void transmit_byte() {
+	SerialPortBuffer* buf = &(USART1_TRANSMIT.buffer);
 
+	// Transmit has reached the end of the string
+	if (buf->index >= length) {
+		// Stop transmitting
+		disable_usart1_transmit_interrupt();
+
+		// Clear buffer
+		buf->index = 0;
+		buf->length = 0;
+		buf->ready = true;
+
+		return;
+	}
+
+	// Write to the USART1 transmit buffer
+	USART1_PORT->UART->TDR = buf->buffer[USART1_TRANSMIT.index];
+
+	// Increment index and check if the end of the buffer has been reached
+	++buf->index;
 }
 
+/// Begins transmission of a string through USART1.
+/// @param data The string to transmit
+/// @param length The length of the string to transmit
+void transmit_string(char* data, uint32_t length) {
+	// TODO copy data into a transmit buffer
 
+	// A different transmission is currently taking place, do not transmit
+	if (!USART1_TRANSMIT.buffer.ready) {
+		return;
+	}
+
+	// Start transmitting
+	enable_usart1_transmit_interrupt();
+	transmit_byte();
+}
+
+/// PRIVATE
+/// This is the function called when USART1 receives an interrupt request.
 void USART1_EXTI25_IRQHandler(void) {
 	// Receive buffer not empty, read a byte
 	if (serial_port->UART->ISR & USART_ISR_RXNE) {
 		receive_byte();
 	}
 
-	// Transmit buffer is empty and transmit has not completed, transmit a byte
+	// Transmit buffer is empty, continue transmission
 	if (serial_port->UART->ISR & USART_ISR_TXE) {
 		transmit_byte();
 	}
 }
 
+/// Enable clock power and system configuration clock.
 void init_usart() {
 	// Enable clock power, system configuration clock and GPIOC (UARTs)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
 }
 
+/// Enables interrupt requests for USART1.
 void enable_usart1_interrupts() {
 	// Disable all interrupt requests while changing interrupt registers
 	__disable_irq();
@@ -107,16 +153,19 @@ void enable_usart1_interrupts() {
 	__enable_irq();
 }
 
+/// Enables triggering interrupts when USART1 receives a byte.
 void enable_usart1_receive_interrupt() {
 	// Enable interrupts on USART receive
 	USART1->CR1 |= USART_CR1_RXNEIE;
 }
 
+/// Enables triggering interrupts when USART1 transmits a byte.
 void enable_usart1_transmit_interrupt() {
 	// Enable interrupts on USART transmit
 	USART1->CR1 |= USART_CR1_TXNEIE;
 }
 
+/// Disables triggering interrupts when USART1 transmits a byte.
 void disable_usart1_transmit_interrupt() {
 	// Disable interrupts on USART transmit
 	USART1->CR1 &= ~USART_CR1_RXNEIE;
@@ -226,6 +275,7 @@ void serial_write_string(char* data, uint32_t length, SerialPort* serial_port) {
 void echo_read_completion(char* buffer,
 						  uint32_t bytes_read) {
 	serial_write_char((char)bytes_read, &USART1_PORT);
+
 	// Iterate the buffer and write the characters to USART1
 	for (int32_t i = 0; i < bytes_read; ++i) {
 		serial_write_char(buffer[i], &USART1_PORT);

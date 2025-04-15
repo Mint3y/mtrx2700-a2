@@ -38,14 +38,28 @@ enum {
   BAUD_115200
 };
 
+/// Initialises the serial module. Should be called before using any serial
+/// functions.
+void init_serial();
+
+/// Begins transmission of a string through USART1.
+/// @param data The string to transmit
+/// @param length The length of the string to transmit
+void transmit_string(char* data, uint32_t length);
+
+/// Enable clock power and system configuration clock.
 void init_usart();
 
+/// Enables interrupt requests for USART1.
 void enable_usart1_interrupts();
 
+/// Enables triggering interrupts when USART1 receives a byte.
 void enable_usart1_receive_interrupt();
 
+/// Enables triggering interrupts when USART1 transmits a byte.
 void enable_usart1_transmit_interrupt();
 
+/// Disables triggering interrupts when USART1 transmits a byte.
 void disable_usart1_transmit_interrupt();
 
 // init_serial - Initialise the serial port
