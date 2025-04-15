@@ -34,10 +34,14 @@ int main(void)
 {
 	//enable the clock
 	enable_clocks();
+
 	//initialise_board
 	initialise_board();
-	//call back setting
+
+	// Set the callback function to be called when the button is press (PA0)
+	// When button is pressed, chase_led() will be invoked
 	setting_callback(&chase_led);
+
 	// enable the interrupt for the button
 	enable_interrupt();
 

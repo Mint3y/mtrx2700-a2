@@ -2,26 +2,35 @@
 #include "stm32f303xc.h"
 #include <stdint.h>
 
-//define the function pointer of the on_button_press default
+
+//define the function pointer of the on_button_press & setting default value
+//Prevent accidental triggering when no callback is assigned
 static void (*on_button_press)(void) = 0x00;
 
+
 //setting the callback function
+//callback function will be called when the button PA0 pressed
 void setting_callback(void(*callback)(void)){
 	on_button_press = callback;
 }
+
+
 // enable the clocks for desired peripherals (GPIOA, C and E)
 void enable_clocks(void) {
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIOEEN;
 }
 
 
-// initialise the discovery board I/O (just outputs: inputs are selected by default)
+
+// initialise the board(set LED PE8-15 OUTPUT)
+//led_output_registers:setting all general purpose output mode of LED (MODER = 01)
 void initialise_board(void) {
 	// get a pointer to the second half word of the MODER register (for outputs pe8-15)
 	uint16_t *led_output_registers = ((uint16_t *)&(GPIOE->MODER)) + 1;
 	*led_output_registers = 0x5555;
 }
-
+//Enable the external interrupt for PA0
+//Trigger type: Rise-edge logic
 void enable_interrupt(void) {
 	// Disable the interrupts while messing around with the settings
 	//  otherwise can lead to strange behaviour
@@ -49,8 +58,11 @@ void enable_interrupt(void) {
 	__enable_irq();
 }
 
+
+//This function will be called automatically when PA0 button pressed
 void EXTI0_IRQHandler(void)
 {
+	// if the callback is Registration and call it
 	if (on_button_press != 0x00) {
 		on_button_press();
 	}
