@@ -59,8 +59,8 @@ all: main-build
 main-build: a2.elf secondary-outputs
 
 # Tool invocations
-a2.elf a2.map: $(OBJS) $(USER_OBJS) /home/appl3s/Documents/mtrx/mtrx2700/mtrx2700-a2/a2/STM32F303VCTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "a2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/appl3s/Documents/mtrx/mtrx2700/mtrx2700-a2/a2/STM32F303VCTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="a2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+a2.elf a2.map: $(OBJS) $(USER_OBJS) C:\Users\user\Documents\GitHub\mtrx2700-a2\a2\STM32F303VCTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "a2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\user\Documents\GitHub\mtrx2700-a2\a2\STM32F303VCTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="a2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
