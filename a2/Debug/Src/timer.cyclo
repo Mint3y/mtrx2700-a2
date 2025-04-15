@@ -1,7 +1,0 @@
-../Src/timer.c:27:6:init_led_change	1
-../Src/timer.c:35:6:set_period	1
-../Src/timer.c:41:6:changing_pattern	3
-../Src/timer.c:57:14:get_current_period	1
-../Src/timer.c:69:6:one_shot_mode	2
-../Src/timer.c:79:6:clock_tick_calculation	1
-../Src/timer.c:87:6:one_shot	3
