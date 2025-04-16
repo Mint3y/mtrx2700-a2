@@ -51,8 +51,6 @@ int io_test(void)
 void full_integration() {
 	// LED module init
 	enable_clocks();
-
-	//initialise_board (init LED PE8-15 output)
 	initialise_board();
 
 	// Serial module initialisation
@@ -64,14 +62,13 @@ void full_integration() {
 	enable_usart1_interrupts();
 	enable_usart1_receive_interrupt();
 
+	// Program loop
 	while (1) {}
 }
 
 int main(void) {
-//    test_serial();
-//	test_serial_interrupt();
 	full_integration();
 
-    /* Loop forever */
+    // Loop forever
 	for(;;);
 }
