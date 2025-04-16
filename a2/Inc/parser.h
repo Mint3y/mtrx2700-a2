@@ -8,7 +8,10 @@
 
 #define INT_PARSING_FAIL -1
 
+#ifndef COMMAND_ARG_SPLIT
 #define COMMAND_ARG_SPLIT ' '
+#endif // COMMAND_ARG_SPLIT
+
 #define LED_ARG_LENGTH 8
 #define PARSE_LED_ARG_FAIL (1 << 8)
 
