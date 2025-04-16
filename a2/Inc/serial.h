@@ -7,6 +7,7 @@
 
 #define SERIAL_BUFFER_SIZE 1024
 #define SERIAL_TERMINATOR '*'
+#define BASE_CLOCK (8000000) // 8MHz
 
 // Serial buffer capable of being used for both receiving and transmitting
 typedef struct _SerialPortBuffer {        // Used for receiving      / Used for transmitting
