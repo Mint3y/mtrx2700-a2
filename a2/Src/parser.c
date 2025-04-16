@@ -190,7 +190,7 @@ void timer_command(char* args, uint32_t length) {
 // buf: The serial port buffer
 void parse_string(SerialPortBuffer* buf) {
 	// Validate command type
-	enum command_type type = parse_command_type(buf->data, buf->length);
+	enum command_type type = parse_command_type(buf->buffer, buf->length);
 	if (type == INVALID) {
 		return;
 	}
@@ -198,7 +198,7 @@ void parse_string(SerialPortBuffer* buf) {
 	// Execute the command based on type
 	switch (type) {
 	case SET_LED:
-		led_command(buf->data + LED_COMMAND_NAME_LENGTH,
+		led_command(buf->buffer + LED_COMMAND_NAME_LENGTH,
 					buf->length - LED_COMMAND_NAME_LENGTH);
 		buf->ready = true;
 		break;
@@ -208,15 +208,18 @@ void parse_string(SerialPortBuffer* buf) {
 		break;
 
 	case TRIGGER_ONESHOT:
-		oneshot_command(buf->data + ONESHOT_COMMAND_NAME_LENGTH,
+		oneshot_command(buf->buffer + ONESHOT_COMMAND_NAME_LENGTH,
 					    buf->length - ONESHOT_COMMAND_NAME_LENGTH);
 		buf->ready = true;
 		break;
 
 	case SET_TIMER:
-		timer_command(buf->data + TIMER_COMMAND_NAME_LENGTH,
+		timer_command(buf->buffer + TIMER_COMMAND_NAME_LENGTH,
 					  buf->length - TIMER_COMMAND_NAME_LENGTH);
 		buf->ready = true;
+		break;
+
+	default:
 		break;
 	}
 }

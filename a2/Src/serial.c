@@ -38,15 +38,14 @@ static struct {
 // stored in a SerialPortBuffer.
 void receive_byte() {
 	// Get the ready buffer
-	SerialPortBuffer* buf = &(USART1_RECEIVE.ready_buffer);
+	SerialPortBuffer* buf = USART1_RECEIVE.ready_buffer;
+
+	serial_write_char('7', &USART1_PORT);
 
 	// Neither buffer is ready, ignore all incoming bytes
 	if (buf->ready == false) {
 		return;
 	}
-
-	// Clear overrun and frame errors
-	USART1_PORT.UART->ICR |= USART_ICR_ORECF | USART_ICR_FECF;
 
 	// USART1 buffer is full, ignore read
 	if (buf->index >= SERIAL_BUFFER_SIZE) {
@@ -59,13 +58,16 @@ void receive_byte() {
 		USART1_RECEIVE.unready_buffer = buf;
 		USART1_RECEIVE.ready_buffer = USART1_RECEIVE.unready_buffer;
 
+		// Mark buffer as unready
+		buf->ready = false;
+
 		// Activate read completion callback
+		serial_write_char('9', &USART1_PORT);
 		USART1_PORT.read_complete(buf);
 
-		// Reset buffer and mark as unready
+		// Reset buffer
 		buf->index = 0;
 		buf->length = 0;
-		buf->ready = false;
 
 		return;
 	}
@@ -81,10 +83,10 @@ void receive_byte() {
 // transmits from a buffer stored within a module SerialPortBuffer
 void transmit_byte() {
 	// Get the ready buffer
-	SerialPortBuffer* buf = &(USART1_TRANSMIT.buffer);
+	SerialPortBuffer* buf = USART1_TRANSMIT.ready_buffer;
 
 	// Transmit has reached the end of the string
-	if (buf->index >= length) {
+	if (buf->index >= buf->length) {
 		// Stop transmitting
 		disable_usart1_transmit_interrupt();
 
@@ -96,7 +98,7 @@ void transmit_byte() {
 		USART1_PORT.write_complete(buf);
 
 		// Clear buffer
-		buf->buffer_ref = NULL;
+		buf->buffer_ref = 0x00;
 		buf->index = 0;
 		buf->length = 0;
 		buf->ready = true;
@@ -104,20 +106,20 @@ void transmit_byte() {
 		// Check if second (queued, now ready) buffer needs transmitting
 		if (USART1_TRANSMIT.transmit_queued) {
 			USART1_TRANSMIT.transmit_queued = false;
-			transmit_ready_string();
+			begin_transmit_ready();
 		}
 
 		return;
 	}
 
 	// Write from transmit buffer reference to the USART1 TDR
-	if (buf->buffer_ref != NULL) {
-		USART1_PORT->UART->TDR = buf->buffer_ref[buf->index];
+	if (buf->buffer_ref != 0x00) {
+		USART1_PORT.UART->TDR = (char)(buf->buffer_ref->buffer[buf->index]);
 	}
 	
 	// Write from transmit buffer to the USART1 TDR
 	else {
-		USART1_PORT->UART->TDR = buf->buffer_ref.buffer[buf->index];
+		USART1_PORT.UART->TDR = (char)buf->buffer[buf->index];
 	}
 
 	// Increment transmit index
@@ -127,15 +129,27 @@ void transmit_byte() {
 // PRIVATE
 // This is the function called when USART1 receives an interrupt request.
 void USART1_EXTI25_IRQHandler(void) {
-	// Receive buffer not empty, read a byte
-	if (serial_port->UART->ISR & USART_ISR_RXNE) {
+	// Receive buffer not empty
+	if (USART1_PORT.UART->ISR & USART_ISR_RXNE) {
+		// Clear overrun, noise, frame and parity errors
+		USART1_PORT.UART->ICR |= (USART_ICR_ORECF
+							  |   USART_ICR_NCF
+							  |   USART_ICR_FECF
+							  |   USART_ICR_PECF);
+
+		// Read a byte amd flush the receive request
 		receive_byte();
+		USART1_PORT.UART->RQR |= USART_RQR_RXFRQ;
+		serial_write_char('2', &USART1_PORT);
 	}
 
-	// Transmit buffer is empty, transmit a byte
-	if (serial_port->UART->ISR & USART_ISR_TXE) {
-		transmit_byte();
-	}
+	// Transmit buffer is empty, transmit a byte and request a flush
+//	if (USART1_PORT.UART->ISR & USART_ISR_TXE) {
+//		serial_write_char('4', &USART1_PORT);
+//		transmit_byte();
+//		serial_write_char('5', &USART1_PORT);
+//		USART1_PORT.UART->RQR |= USART_RQR_TXFRQ;
+//	}
 }
 
 // Initialises the serial module. Should be called before using any serial
@@ -144,18 +158,14 @@ void init_serial() {
 	// Initialise receive buffers
 	USART1_RECEIVE.ready_buffer = USART1_RECEIVE.buffers;
 	USART1_RECEIVE.unready_buffer = USART1_RECEIVE.buffers + 1;
-	USART1_RECEIVE.buffers = (SerialPortBuffer[]){
-	    (SerialPortBuffer){{0}, NULL, 0, SERIAL_BUFFER_SIZE, true},
-	    (SerialPortBuffer){{0}, NULL, 0, SERIAL_BUFFER_SIZE, true}
-	};
+	USART1_RECEIVE.buffers[0] = (SerialPortBuffer){{0}, 0x00, 0, 0, true};
+	USART1_RECEIVE.buffers[1] = (SerialPortBuffer){{0}, 0x00, 0, 0, true};
 
 	// Initialise transmit buffer
 	USART1_TRANSMIT.ready_buffer = USART1_TRANSMIT.buffers;
 	USART1_TRANSMIT.unready_buffer = USART1_TRANSMIT.buffers + 1;
-	USART1_TRANSMIT.buffers = (SerialPortBuffer[]){
-	    (SerialPortBuffer){{0}, NULL, 0, SERIAL_BUFFER_SIZE, true},
-	    (SerialPortBuffer){{0}, NULL, 0, SERIAL_BUFFER_SIZE, true}
-	};
+	USART1_TRANSMIT.buffers[0] = (SerialPortBuffer){{0}, 0x00, 0, 0, true};
+	USART1_TRANSMIT.buffers[1] = (SerialPortBuffer){{0}, 0x00, 0, 0, true};
 	USART1_TRANSMIT.transmit_queued = false;
 }
 
@@ -246,7 +256,7 @@ void enable_usart1_receive_interrupt() {
 /// Enables triggering interrupts when USART1 transmits a byte.
 void enable_usart1_transmit_interrupt() {
 	// Enable interrupts on USART transmit
-	USART1->CR1 |= USART_CR1_TXNEIE;
+	USART1->CR1 |= USART_CR1_TXEIE;
 }
 
 /// Disables triggering interrupts when USART1 transmits a byte.
@@ -262,7 +272,7 @@ void disable_usart1_transmit_interrupt() {
 SerialPortBuffer* get_open_transmit_buffer() {
 	// Both transmission buffers are in use, fail
 	if (USART1_TRANSMIT.transmit_queued) {
-		return NULL;
+		return 0x00;
 	}
 
 	// First buffer is ready for transmission
@@ -277,7 +287,7 @@ SerialPortBuffer* get_open_transmit_buffer() {
 	USART1_TRANSMIT.transmit_queued = true;
 
 	// Return second buffer
-	return USART_TRANSMIT.unready_buffer;
+	return USART1_TRANSMIT.unready_buffer;
 }
 
 // Sets the transmit completion function for the USART1 Port
@@ -298,9 +308,9 @@ void begin_transmit_ready() {
 // buf: The transmit buffer that finished transmitting
 void default_write_completion(SerialPortBuffer* buf) {
 	// Transmit was writing from a buffer ref
-	if (buf->buffer_ref != NULL) {
+	if (buf->buffer_ref != 0x00) {
 		// Allow further use of the buffer ref
-		buf->buffer_ref.ready = true;
+		buf->buffer_ref->ready = true;
 	}
 }
 
@@ -308,9 +318,9 @@ void default_write_completion(SerialPortBuffer* buf) {
 // terminator:  The terminating character to read until
 // buf:         The buffer to read into
 // serial_port: The port to receive from
-int serial_read_until_terminator(uint8_t     	  terminator,
-								 SerialPortBuffer buf,
-		                         SerialPort* 	  serial_port) {
+int serial_read_until_terminator(uint8_t     	   terminator,
+								 SerialPortBuffer* buf,
+		                         SerialPort* 	   serial_port) {
 	uint8_t read = '\0';
 
 	// Read until terminating character is read or the buffer is full
@@ -327,9 +337,6 @@ int serial_read_until_terminator(uint8_t     	  terminator,
 		read = serial_port->UART->RDR;
 		buf->buffer[buf->index] = read;
 		++(buf->index);
-
-		// Echo result back out TODO remove
-		serial_write_char(read, serial_port);
 	}
 
 	// Update buffer length
@@ -377,7 +384,7 @@ void echo_read_completion(SerialPortBuffer* buf) {
 // An example (naive) read completion function which echoes back what was read.
 // buf: The transmit buffer that finished transmitting
 void naive_echo(SerialPortBuffer* buf) {
-	serial_write_string(buf->buffer, buf->length, *USART1_PORT);
+	serial_write_string(buf->buffer, buf->length, &USART1_PORT);
 }
 
 void test_serial() {
@@ -387,12 +394,13 @@ void test_serial() {
 	init_usart();
 	init_serial_port_16bit(BAUD_9600, &USART1_PORT, naive_echo);
 
+	// Program loop
 	while (1) {
 		// Read from USART1 (polling) and perform completion function (echo)
-		int read_bytes = serial_read_until_terminator('*', buf, &USART1_PORT);
-
-		// Transmit number of bytes written after transmitting what was just read
+		int read_bytes = serial_read_until_terminator('*', &buf, &USART1_PORT);
+		serial_write_char('\n', &USART1_PORT);
 		serial_write_char(read_bytes, &USART1_PORT);
+		serial_write_char('\n', &USART1_PORT);
 	}
 }
 
@@ -406,5 +414,7 @@ void test_serial_interrupt() {
 	enable_usart1_interrupts();
 	enable_usart1_receive_interrupt();
 
-	while (1);
+	while (1) {
+		SerialPort* port = &USART1_PORT;
+	}
 }
