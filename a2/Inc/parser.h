@@ -65,7 +65,7 @@ int16_t parse_led_arg(char* args, uint32_t length);
 // data:   The string
 // length: The length of the string
 // Returns the number as a decimal or INT_PARSING_FAIL if parsing failed
-int32_t parse_unsigned_int(char* data);
+int32_t parse_unsigned_int(char* data, uint32_t length);
 
 // The LED command.
 // args:   The LED command arguments
@@ -89,6 +89,6 @@ void timer_command(char* args, uint32_t length);
 // Parses a string and runs any associated commands. Intended to be used as
 // the serial read completion function.
 // buf: The serial port buffer
-void parse_string(char* data, uint32_t length);
+void parse_string(SerialPortBuffer* buf);
 
 #endif // PARSER_H

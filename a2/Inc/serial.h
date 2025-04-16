@@ -2,7 +2,20 @@
 #define SERIAL_PORT_HEADER
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "stm32f303xc.h"
+
+#define SERIAL_BUFFER_SIZE 1024
+#define SERIAL_TERMINATOR '*'
+
+// Serial buffer capable of being used for both receiving and transmitting
+typedef struct _SerialPortBuffer {        // Used for receiving      / Used for transmitting
+	char buffer[SERIAL_BUFFER_SIZE];      // Buffer to read to       / Buffer to write from
+	struct _SerialPortBuffer* buffer_ref; // NOT USED                / Buffer reference
+	uint32_t index;					      // Number of bytes read    / Number of bytes written
+	uint32_t length;				      // Length of buffer (1024) / Length to write
+	bool ready;                           // Buffer is not reading   / Buffer is not writing
+} SerialPortBuffer;
 
 // We store the pointers to the GPIO and USART that are used
 //  for a specific serial port. To add another serial port
@@ -22,18 +35,6 @@ typedef struct _SerialPort {
 											  // for future use
 	void (*write_complete)(SerialPortBuffer*); // Executed at end of transmission
 } SerialPort;
-
-#define SERIAL_BUFFER_SIZE 1024
-#define SERIAL_TERMINATOR '*'
-
-// Serial buffer capable of being used for both receiving and transmitting
-typedef struct _SerialPortBuffer {        // Used for receiving      / Used for transmitting
-	char buffer[SERIAL_BUFFER_SIZE];      // Buffer to read to       / Buffer to write from
-	struct _SerialPortBuffer* buffer_ref; // NOT USED                / Buffer reference
-	uint32_t index;					      // Number of bytes read    / Number of bytes written
-	uint32_t length;				      // Length of buffer (1024) / Length to write
-	bool ready;                           // Buffer is not reading   / Buffer is not writing
-} SerialPortBuffer;
 
 enum BaudRate {
   BAUD_9600,
@@ -93,9 +94,9 @@ void default_write_completion(SerialPortBuffer* buf);
 // terminator:  The terminating character to read until
 // buf:         The buffer to read into
 // serial_port: The port to read from
-int serial_read_until_terminator(uint8_t     	  terminator,
-								 SerialPortBuffer buf,
-		                         SerialPort* 	  serial_port);
+int serial_read_until_terminator(uint8_t     	   terminator,
+								 SerialPortBuffer* buf,
+		                         SerialPort* 	   serial_port);
 
 // Naively writes a char to a serial port. Waits for transmit buffer to be
 // empty with a while loop.
