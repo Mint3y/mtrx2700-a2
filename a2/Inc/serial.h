@@ -9,7 +9,10 @@
 #define SERIAL_BUFFER_SIZE 1024
 #endif // SERIAL_BUFFER_SIZE
 
+#ifndef SERIAL_TERMINATOR
 #define SERIAL_TERMINATOR '*'
+#endif // SERIAL_TERMINATOR
+
 #define BASE_CLOCK (8000000) // 8MHz
 
 // Serial buffer capable of being used for both receiving and transmitting
