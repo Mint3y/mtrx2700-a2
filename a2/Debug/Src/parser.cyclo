@@ -1,4 +1,0 @@
-../Src/parser.c:3:10:string_find	2
-../Src/parser.c:13:6:starts_with	2
-../Src/parser.c:21:19:examine_string	2
-../Src/parser.c:29:6:parse_string	1
