@@ -94,9 +94,8 @@ int16_t parse_led_arg(char* args, uint32_t length) {
 	}
 
 	// Convert the string of 1s and 0s to an integer
-	int32_t i = 0;
 	int16_t result = 0;
-	while (i < LED_ARG_LENGTH) {
+	for (int i = 0; i < LED_ARG_LENGTH; ++i) {
 		// String is '1', set the i'th bit of the result
 		if (args[i] == '1') {
 			result |= 1 << (LED_ARG_LENGTH - 1 - i);
