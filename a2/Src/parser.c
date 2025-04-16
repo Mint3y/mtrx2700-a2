@@ -183,6 +183,18 @@ void oneshot_command(char* args, uint32_t length) {
 		return;
 	}
 
+	// Set the timer callback
+	// (do that)
+
+	// Set the timer period
+	// (do that)
+
+	// Enable timer one shot
+	// (do that)
+
+	// Start the oneshot timer
+	// (do that)
+
 	testc(OneShotDelay);
 
 
