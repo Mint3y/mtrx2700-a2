@@ -195,30 +195,23 @@ void init_serial_port_16bit(enum BaudRate baud_rate,
 	RCC->APB1ENR |= serial_port->MaskAPB1ENR;
 	RCC->APB2ENR |= serial_port->MaskAPB2ENR;
 
-	// Get associated Baud Rate Register (BBR) (16 bit)
-	uint16_t *baud_rate_register = (uint16_t*)&serial_port->UART->BRR;
-
 	// Baud rate calculation from datasheet
 	// replace with a mathematical function TODO
 	switch(baud_rate) {
 	case BAUD_9600:
-		// NEED TO FIX THIS ! TODO
-		*baud_rate_register = 0x46;  // 115200 at 8MHz
+		serial_port->UART->BRR = (uint16_t)(BASE_CLOCK / 9600);
 		break;
 	case BAUD_19200:
-		// NEED TO FIX THIS !
-		*baud_rate_register = 0x46;  // 115200 at 8MHz
+		serial_port->UART->BRR = (uint16_t)(BASE_CLOCK / 19200);
 		break;
 	case BAUD_38400:
-		// NEED TO FIX THIS !
-		*baud_rate_register = 0x46;  // 115200 at 8MHz
+		serial_port->UART->BRR = (uint16_t)(BASE_CLOCK / 38400);
 		break;
 	case BAUD_57600:
-		// NEED TO FIX THIS !
-		*baud_rate_register = 0x46;  // 115200 at 8MHz
+		serial_port->UART->BRR = (uint16_t)(BASE_CLOCK / 57600);
 		break;
 	case BAUD_115200:
-		*baud_rate_register = 0x46;  // 115200 at 8MHz
+		serial_port->UART->BRR = (uint16_t)(BASE_CLOCK / 115200);
 		break;
 	}
 

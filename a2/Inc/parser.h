@@ -16,10 +16,10 @@
 #define SERIAL_COMMAND_NAME_LENGTH  (6 + 1)
 #define ONESHOT_COMMAND_NAME_LENGTH (7 + 1)
 #define TIMER_COMMAND_NAME_LENGTH   (5 + 1)
-#define LED_COMMAND_NAME     "led"
-#define SERIAL_COMMAND_NAME  "serial"
-#define ONESHOT_COMMAND_NAME "oneshot"
-#define TIMER_COMMAND_NAME   "timer"
+#define LED_COMMAND_NAME     "led "
+#define SERIAL_COMMAND_NAME  "serial "
+#define ONESHOT_COMMAND_NAME "oneshot "
+#define TIMER_COMMAND_NAME   "timer "
 
 // Enum for possible command types (otherwise INVALID)
 enum command_type {
