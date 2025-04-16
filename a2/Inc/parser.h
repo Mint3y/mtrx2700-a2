@@ -70,6 +70,7 @@ int32_t parse_unsigned_int(char* data, uint32_t length);
 // The LED command.
 // args:   The LED command arguments
 // length: The length of the command arguments
+
 void led_command(char* args, uint32_t length);
 
 // The echo command.
