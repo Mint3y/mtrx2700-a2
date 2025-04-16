@@ -87,7 +87,10 @@ void set_timer_base_period(uint32_t value) {
 	TIMER_STATE.timer->ARR = value;
 }
 
-
+void set_timer_oneshot_delay(uint32_t value) {
+	set_timer_base_period(value);
+	TIMER_STATE.timer->CCR1 = value;
+}
 
 
 
@@ -112,7 +115,8 @@ void initialise_timer_a(int delay_ms, uint8_t *led_reg, PatternForCallback CallB
 
 	mode = 1;
 
-	pattern1 = CallBack;
+//	pattern1 = CallBack;
+	set_timer_callback(CallBack);
 
 	Led_register = led_reg;
 
@@ -121,9 +125,9 @@ void initialise_timer_a(int delay_ms, uint8_t *led_reg, PatternForCallback CallB
 	TIM2-> ARR = delay_ms;
 	TIM2 -> CNT = 0;
 
-	//Enable Interrupt
-    TIM2->DIER |= TIM_DIER_UIE;
-    NVIC_EnableIRQ(TIM2_IRQn);
+//	//Enable Interrupt
+//    TIM2->DIER |= TIM_DIER_UIE;
+//    NVIC_EnableIRQ(TIM2_IRQn);
 
     //Enable Count
     TIM2->CR1 |= TIM_CR1_CEN;
@@ -136,7 +140,8 @@ void initialise_timer_b(int delay_ms, PatternForNewPeriod CallBack){
 
 	mode = 2;
 
-	pattern2 = CallBack;
+//	pattern2 = CallBack;
+	set_timer_callback(CallBack);
 
 	period = delay_ms;
 
@@ -157,7 +162,8 @@ void initialise_timer_b(int delay_ms, PatternForNewPeriod CallBack){
 
 void oneshot_timer_start(uint32_t delay_ms, OneShotCallback callback, uint8_t *led_reg)
 {
-    oneshot_callback = callback;
+//    oneshot_callback = callback;
+	set_timer_callback(callback);
     Led_register = led_reg;
 
 
@@ -175,7 +181,6 @@ void oneshot_timer_start(uint32_t delay_ms, OneShotCallback callback, uint8_t *l
     // Enable one-pulse mode
     TIM2->CR1 |= TIM_CR1_OPM;
 
-    // Enable capture/compare interrupt
     TIM2->DIER |= TIM_DIER_CC1IE;
 
     TIM2->CNT = 0;
@@ -183,10 +188,7 @@ void oneshot_timer_start(uint32_t delay_ms, OneShotCallback callback, uint8_t *l
     // Enable timer
     TIM2->CR1 |= TIM_CR1_CEN;
 
-    // Enable interrupt
-
-    NVIC_EnableIRQ(TIM2_IRQn);
-
+	NVIC_EnableIRQ(TIM2_IRQn);
 }
 
 
@@ -194,54 +196,55 @@ void oneshot_timer_start(uint32_t delay_ms, OneShotCallback callback, uint8_t *l
 // Interrupt service routine for call back function
 
 
-void TIM2_IRQHandler(void){
-
+void TIM2_IRQHandler(void) {
 	// Update current state for interrupt
 	if(TIM2 -> SR & TIM_SR_UIF){
 
 		// Clear Flag for next update event
 	    TIM2->SR &= ~TIM_SR_UIF;
 
-	    if(mode == 1){
-			if(pattern1 != 0){
-			pattern1(Led_register);
+	    TIMER_STATE.callback();
+	    return;
 
-			}
 
-	    }
-
-	    else if (mode == 2){
-
-	    	if(pattern2 != 0){
-				pattern2(period);
-
-				}
-
-	    	}
-		}
+//	    if(mode == 1){
+//			if(pattern1 != 0){
+//			pattern1(Led_register);
+//
+//			}
+//
+//	    }
+//
+//	    else if (mode == 2){
+//
+//	    	if(pattern2 != 0){
+//				pattern2(period);
+//TIM_SR_CC1IF
+//			}
+//
+//	    }
+	}
 
 	// oneshot first pulse
-	 if (TIM2->SR & TIM_SR_CC1IF)
-	    {
-	        // Disable capture/compare flag
-	        TIM2->SR &= ~TIM_SR_CC1IF;
-
-
-	        if (oneshot_callback != 0)
-	        {
-	            oneshot_callback(Led_register);
-
-	        }
-
-	        // Disable the Capture/Compare 1 interrupt
-	        TIM2->DIER &= ~TIM_DIER_CC1IE;
-
-
-	    }
-
-
-
-
+//	 if (TIM2->SR & TIM_SR_CC1IF)
+//	    {
+//	        // Disable capture/compare flag
+//	        TIM2->SR &= ~TIM_SR_CC1IF;
+//
+//		    TIMER_STATE.callback();
+//		    return;
+//
+//	        if (oneshot_callback != 0)
+//	        {
+//	            oneshot_callback(Led_register);
+//
+//	        }
+//
+//	        // Disable the Capture/Compare 1 interrupt
+//	        TIM2->DIER &= ~TIM_DIER_CC1IE;
+//
+//
+//	 }
 }
 
 
@@ -311,7 +314,7 @@ void one_shot_pattern(void)
 void testa(int period_value)
 {
 
-	//uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
+//	uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
 
 
 	initialise_timer_a(period_value, led_output_register, change_pattern_a);
@@ -338,26 +341,34 @@ void testb(int period_value){
 
 void testc(int oneshotdelay){
 
-
 	uint32_t on_time = 2000;
 	uint32_t off_time = 4000;
 
 	uint8_t led_mask_pattern = 0b01010101;
 	uint8_t *led_output_register = ((uint8_t *)&(GPIOE->ODR)) + 1;
 
+//	// Flash a bit
+//	*led_output_register = led_mask_pattern;
+//	while (TIM2->CNT < on_time) { }
+//	*led_output_register = 0x00;
+//	while (TIM2->CNT < off_time) { }
 
+
+//	oneshot_timer_start(oneshotdelay, one_shot_pattern, led_output_register);
+
+//	while (1) {}
+//
 
 	for (;;)
 	{
 
 		TIM2->CNT = 0;
-
 		TIM2->CR1 |= TIM_CR1_CEN;
 		TIM2->PSC = 7999;
 		trigger_prescaler();
 
-		*led_output_register = led_mask_pattern;
 
+		*led_output_register = led_mask_pattern;
 		while (TIM2->CNT < on_time) { }
 
 		*led_output_register = 0x00;

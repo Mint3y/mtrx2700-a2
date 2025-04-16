@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "serial.h"
+#include "timer.h"
 
 #define INT_PARSING_FAIL -1
 
@@ -23,6 +24,8 @@
 
 #define LED_FAIL_MESSAGE        "\nLED fail\n"
 #define LED_FAIL_MESSAGE_LENGTH (sizeof(LED_FAIL_MESSAGE) - 1)
+#define ONESHOT_ARG_FAIL_MESSAGE        "\nOneshot argument was not a number!\n"
+#define ONESHOT_ARG_FAIL_MESSAGE_LENGTH (sizeof(ONESHOT_ARG_FAIL_MESSAGE) - 1)
 #define INVALID_COMMAND_MESSAGE        "\nINVALID Command: "
 #define INVALID_COMMAND_MESSAGE_LENGTH (sizeof(INVALID_COMMAND_MESSAGE) - 1)
 

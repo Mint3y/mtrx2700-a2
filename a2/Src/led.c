@@ -27,7 +27,7 @@ void chase_led(void){
 //status 8-bit value: each bits repersents of one LED; ON=1, OFF=0
 void set_led(uint8_t state){
 	*led_register =state;   //Update the led internal state
-	*(((uint8_t*)&(GPIOE->ODR)) + 1)= state; // send the led bitmasks to GPIOE
+	*(((uint8_t*)&(GPIOE->ODR)) + 1) = state; // send the led bitmasks to GPIOE
 }
 
 

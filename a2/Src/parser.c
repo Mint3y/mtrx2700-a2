@@ -1,5 +1,4 @@
 #include "parser.h"
-#include "timer.h"
 
 // Finds a character in a string. Stops at given length.
 // data:       The string
@@ -173,34 +172,35 @@ void echo_command(SerialPortBuffer* buf) {
 	begin_transmit_ready();
 }
 
-// The oneshot command.
-// args: The oneshot command arguments
+void revolve() {
+	uint16_t led_state = (uint16_t)get_led();
+	led_state <<= 1;
+	led_state |= (led_state >> 8);
+	set_led((uint8_t)led_state);
+}
+
+// The one-shot command.
+// args: The one-shot command arguments
 // length: The length of the command arguments
 void oneshot_command(char* args, uint32_t length) {
-	// Oneshot TODO
-
-	int32_t OneShotDelay = parse_unsigned_int(args, length);
-
-	if(OneShotDelay == INT_PARSING_FAIL){
-
+	// Parse the one shot delay
+	int32_t one_shot_delay = parse_unsigned_int(args, length);
+	if(one_shot_delay == INT_PARSING_FAIL){
+		attempt_serial_transmit(ONESHOT_ARG_FAIL_MESSAGE,
+								ONESHOT_ARG_FAIL_MESSAGE_LENGTH);
 		return;
 	}
 
 	// Set the timer callback
-	// (do that)
+	set_timer_callback(revolve);
 
-	// Set the timer period
-	// (do that)
+	// Set one-shot delay and enable one-shot
+	set_timer_oneshot_delay(one_shot_delay);
+	enable_timer_onepulse();
 
-	// Enable timer one shot
-	// (do that)
-
-	// Start the oneshot timer
-	// (do that)
-
-	testc(OneShotDelay);
-
-
+	// Start the one-shot timer
+	restart_timer();
+	resume_timer();
 }
 
 // The timer command.
@@ -212,14 +212,19 @@ void timer_command(char* args, uint32_t length) {
 
 	if(TimerPeriod == INT_PARSING_FAIL){
 
-			return;
-		}
+		return;
+	}
 
-	testa(TimerPeriod);
+	// Set the timer callback
+	set_timer_callback(revolve);
 
+	// Set timer period
+	set_timer_base_period(TimerPeriod);
+	disable_timer_onepulse();
 
-
-
+	// Start the one-shot timer
+	restart_timer();
+	resume_timer();
 }
 
 // Parses a string and runs any associated commands. Intended to be used as

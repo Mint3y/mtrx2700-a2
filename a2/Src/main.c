@@ -62,12 +62,42 @@ void full_integration() {
 	enable_usart1_interrupts();
 	enable_usart1_receive_interrupt();
 
+	init_timer();
+	enable_timer2_interrupts();
+	set_timer_prescaler(7999);
+
 	// Program loop
 	while (1) {}
 }
 
+void timer_testa() {
+	enable_clocks();
+	initialise_board();
+	init_timer();
+	TIM2->PSC = 7999;
+	enable_timer2_interrupts();
+	testa(1000);
+}
+
+void timer_testb() {
+	enable_clocks();
+	initialise_board();
+	init_timer();
+	TIM2->PSC = 7999;
+	enable_timer2_interrupts();
+	testb(1000);
+}
+
+void timer_testc() {
+	enable_clocks();
+	initialise_board();
+	testc(1000);
+}
+
 int main(void) {
-	full_integration();
+//	timer_testa();
+	timer_testc();
+//	full_integration();
 
     // Loop forever
 	for(;;);
