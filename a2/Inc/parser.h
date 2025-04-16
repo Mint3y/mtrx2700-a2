@@ -21,6 +21,11 @@
 #define ONESHOT_COMMAND_NAME "oneshot "
 #define TIMER_COMMAND_NAME   "timer "
 
+#define LED_FAIL_MESSAGE        "\nLED fail\n"
+#define LED_FAIL_MESSAGE_LENGTH (sizeof(LED_FAIL_MESSAGE) - 1)
+#define INVALID_COMMAND_MESSAGE        "\nINVALID Command: "
+#define INVALID_COMMAND_MESSAGE_LENGTH (sizeof(INVALID_COMMAND_MESSAGE) - 1)
+
 // Enum for possible command types (otherwise INVALID)
 enum command_type {
 	SET_LED,

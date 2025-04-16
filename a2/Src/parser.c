@@ -141,6 +141,9 @@ void led_command(char* args, uint32_t length) {
 	// Validate led argument
 	int16_t led_arg = parse_led_arg(args, length);
 	if (led_arg == PARSE_LED_ARG_FAIL) {
+		// Display a debug message
+		attempt_serial_transmit(LED_FAIL_MESSAGE, LED_FAIL_MESSAGE_LENGTH);
+
 		// Display a debug message and set LEDs to 0x00 (maybe we dont do this)
 		// alternative debug: have all leds flash 3 times before reverting to their previous state
 		// TODO
@@ -166,6 +169,7 @@ void echo_command(SerialPortBuffer* buf) {
 	transmit_buf->index = SERIAL_COMMAND_NAME_LENGTH;
 	transmit_buf->length = buf->length;
 
+	// Start transmission
 	begin_transmit_ready();
 }
 
@@ -249,8 +253,24 @@ void parse_string(SerialPortBuffer* buf) {
 		buf->ready = true;
 		break;
 
-	default:
-		buf->ready = true;
+	default: {
+		// Transmit a fail message
+		attempt_serial_transmit(INVALID_COMMAND_MESSAGE,
+								INVALID_COMMAND_MESSAGE_LENGTH);
+
+
+		// Echo out contents of invalid command
+		SerialPortBuffer* transmit_buf = get_open_transmit_buffer();
+		if (transmit_buf == 0x00) {
+			return;
+		}
+
+		// Transmit a reference of the receive buffer
+		transmit_buf->buffer_ref = buf;
+		transmit_buf->index = 0;
+		transmit_buf->length = buf->length;
+		begin_transmit_ready();
 		break;
+	}
 	}
 }

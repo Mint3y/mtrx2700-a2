@@ -1,9 +1,9 @@
 #include "timer.h"
 
-struct TIMER_STATE {
+static struct {
 	TIM_TypeDef* timer;
 	void (*callback)();
-};
+} TIMER_STATE;
 
 // Initialise the timer module.
 void init_timer() {

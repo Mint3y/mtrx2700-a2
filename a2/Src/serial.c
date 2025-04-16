@@ -57,8 +57,8 @@ void receive_byte() {
 	// Character is a terminator
 	if (USART1_PORT.UART->RDR == SERIAL_TERMINATOR) {
 		// Swap buffers
-		USART1_RECEIVE.unready_buffer = buf;
 		USART1_RECEIVE.ready_buffer = USART1_RECEIVE.unready_buffer;
+		USART1_RECEIVE.unready_buffer = buf;
 
 		// Mark buffer as unready
 		buf->ready = false;
@@ -93,8 +93,8 @@ void transmit_byte() {
 		USART1_TRANSMIT.transmitting = false;
 
 		// Swap buffers
-		USART1_TRANSMIT.unready_buffer = buf;
 		USART1_TRANSMIT.ready_buffer = USART1_TRANSMIT.unready_buffer;
+		USART1_TRANSMIT.unready_buffer = buf;
 
 		// Activate write completion callback
 		USART1_PORT.write_complete(buf);
@@ -306,6 +306,29 @@ void begin_transmit_ready() {
 	enable_usart1_transmit_interrupt();
 	USART1_TRANSMIT.transmitting = true;
 	transmit_byte();
+}
+
+// Attempt to transmit a string. Fails silently if no transmission buffer is available.
+// data:   The string
+// length: The length of the string
+void attempt_serial_transmit(char* data, uint32_t length) {
+	// Get an open transmission buffer, fail if none are available
+	SerialPortBuffer* transmit_buf = get_open_transmit_buffer();
+	if (transmit_buf == 0x00) {
+		return;
+	}
+
+	// Copy data to transmit buffer
+	for (int i = 0; i < length; ++i) {
+		transmit_buf->buffer[i] = data[i];
+	}
+
+	// Set start and end indices of transmit
+	transmit_buf->index = 0;
+	transmit_buf->length = length;
+
+	// Start transmission
+	begin_transmit_ready();
 }
 
 // Default callback for write completion

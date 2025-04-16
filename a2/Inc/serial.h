@@ -91,6 +91,11 @@ void set_write_completion(void write_completion(SerialPortBuffer*));
 // Via USART1
 void begin_transmit_ready();
 
+// Attempt to transmit a string. Fails silently if no transmission buffer is available.
+// data:   The string
+// length: The length of the string
+void attempt_serial_transmit(char* data, uint32_t length);
+
 // Default callback for write completion
 // buf: The transmit buffer that finished transmitting
 void default_write_completion(SerialPortBuffer* buf);
