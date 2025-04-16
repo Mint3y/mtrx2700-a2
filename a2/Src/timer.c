@@ -288,27 +288,6 @@ void change_pattern_a(){
 
 
 
-// Alternate LED pattern based on period value
-
-//void change_pattern_b(int period){
-//
-//	uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
-//
-//	// LED on for 2 seconds
-//	if (period == 1000){
-//		*led_output_register = 0xFF;
-//		set_period(2000);
-//	}
-//
-//	// LED off for 1 second
-//	else{
-//		*led_output_register = 0x00;
-//		set_period(1000);
-//	}
-//
-//}
-
-
 
 void change_pattern_b(void){
 
