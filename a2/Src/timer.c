@@ -1,8 +1,75 @@
 #include "timer.h"
-#include "stm32f303xc.h"
 
+struct TIMER_STATE {
+	TIM_TypeDef* timer;
+	void (*callback)();
+};
 
+// Initialise the timer module.
+void init_timer() {
+	TIMER_STATE.timer = TIM2;
+	TIMER_STATE.callback = 0x00;
+}
 
+// Enable interrupt requests for timer 2.
+void enable_timer2_interrupts() {
+	// Disable all interrupt requests while changing interrupt registers
+	__disable_irq();
+
+	// Set priority and enable interrupt requests for TIM2 in the NVIC
+	NVIC_SetPriority(TIM2_IRQn, 2);
+	NVIC_EnableIRQ(TIM2_IRQn);
+
+	// Re-enable interrupt requests
+	__enable_irq();
+
+    // Enable capture/compare interrupt for TIM2
+    TIM2->DIER |= TIM_DIER_CC1IE;
+}
+
+// Set the callback function that is run when the timer triggers.
+// callback: The function to call when the timer interrupt triggers
+void set_timer_callback(void (*callback)()) {
+	TIMER_STATE.callback = callback;
+}
+
+// Allows the timer to count.
+void resume_timer() {
+	TIMER_STATE.timer->CR1 |= TIM_CR1_CEN;
+}
+
+// Stops the timer from counting.
+void pause_timer() {
+	TIMER_STATE.timer->CR1 &= ~TIM_CR1_CEN;
+}
+
+// Sets the timer counter back to 0.
+void restart_timer() {
+	TIMER_STATE.timer->CNT = 0;
+}
+
+// Sets the timer pre-scaler (number of clock ticks before timer counts).
+// value: The value to set the pre-scaler to
+void set_timer_prescaler(uint16_t value) {
+	TIMER_STATE.timer->PSC = value;
+}
+
+// Enables the one-pulse timer option
+void enable_timer_onepulse() {
+	TIMER_STATE.timer->CR1 |= TIM_CR1_OPM;
+}
+
+// Disables the one-pulse timer option
+void disable_timer_onepulse() {
+	TIMER_STATE.timer->CR1 &= ~TIM_CR1_OPM;
+}
+
+// Sets the timer auto reload (value to count up to/down from). Period will be
+// divided by the pre-scaler value.
+// value: The value to set the auto reload register to
+void set_timer_base_period(uint32_t value) {
+	TIMER_STATE.timer->ARR = value;
+}
 
 static PatternForCallback pattern1 = 0;
 static PatternForNewPeriod pattern2 = 0;
@@ -11,11 +78,7 @@ static OneShotCallback oneshot_callback = 0;
 static uint8_t *Led_register = 0;
 static int period = 0;
 //static uint8_t *oneshot_led_reg = 0;
-
 int mode = 0; 	// mode 1  = part a and mode 2 = part b
-
-
-
 
 
 void trigger_prescaler() {

@@ -2,6 +2,7 @@
 #define TIMER_H
 
 #include <stdint.h>
+#include "stm32f303xc.h"
 
 
 /*CALL BACK FUNCTIONS*/
