@@ -49,6 +49,11 @@ int io_test(void)
 }
 
 void full_integration() {
+	// LED module init
+	enable_clocks();
+
+	//initialise_board (init LED PE8-15 output)
+	initialise_board();
 
 	// Serial module initialisation
 	init_serial();

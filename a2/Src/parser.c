@@ -147,7 +147,7 @@ void led_command(char* args, uint32_t length) {
 	}
 
 	// Set LEDs
-	// TODO
+	set_led(led_arg);
 }
 
 // The echo command.
