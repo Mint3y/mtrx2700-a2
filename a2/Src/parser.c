@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "timer.h"
 
 // Finds a character in a string. Stops at given length.
 // data:       The string
@@ -175,8 +176,13 @@ void echo_command(SerialPortBuffer* buf) {
 void oneshot_command(char* args, uint32_t length) {
 	// Oneshot TODO
 
+	int32_t delay = parse_unsigned_int(args, length);  // e.g 1000
 
-	// pls use parse_unsigned_int(char* data)
+	if(delay == INT_PARSING_FAIL){
+
+		return;
+	}
+
 
 
 }
@@ -186,7 +192,6 @@ void oneshot_command(char* args, uint32_t length) {
 // length: The length of the command arguments
 void timer_command(char* args, uint32_t length) {
 	// Set timer TODO
-
 
 
 	// pls use parse_unsigned_int(char* data)

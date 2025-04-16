@@ -49,6 +49,7 @@ int io_test(void)
 }
 
 void full_integration() {
+
 	// Serial module initialisation
 	init_serial();
 	init_usart();
