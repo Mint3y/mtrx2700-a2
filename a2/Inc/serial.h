@@ -13,7 +13,7 @@
 #define BASE_CLOCK (8000000) // 8MHz
 
 // Serial buffer capable of being used for both receiving and transmitting
-typedef struct _SerialPortBuffer {            // Used for receiving      / Used for transmitting
+typedef struct _SerialPortBuffer {        // Used for receiving      / Used for transmitting
 	char buffer[SERIAL_BUFFER_SIZE];      // Buffer to read to       / Buffer to write from
 	struct _SerialPortBuffer* buffer_ref; // NOT USED                / Buffer reference
 	uint32_t index;                       // Number of bytes read    / Number of bytes written
@@ -35,8 +35,8 @@ typedef struct _SerialPort {
 	volatile uint32_t SerialPinAlternatePinValueLow;
 	volatile uint32_t SerialPinAlternatePinValueHigh;
 	void (*read_complete)(SerialPortBuffer*); // When executed this function 
-                                                  // should mark buffer as ready
-                                                  // for future use
+                                              // should mark buffer as ready
+                                              // for future use
 	void (*write_complete)(SerialPortBuffer*); // Executed at end of transmission
 } SerialPort;
 
