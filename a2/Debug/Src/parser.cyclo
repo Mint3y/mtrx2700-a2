@@ -1,4 +1,10 @@
-../Src/parser.c:3:10:string_find	2
-../Src/parser.c:13:6:starts_with	2
-../Src/parser.c:21:19:examine_string	2
-../Src/parser.c:29:6:parse_string	1
+../Src/parser.c:8:10:string_find	3
+../Src/parser.c:26:6:starts_with	4
+../Src/parser.c:50:19:parse_command_type	5
+../Src/parser.c:89:9:parse_led_arg	5
+../Src/parser.c:117:9:parse_unsigned_int	4
+../Src/parser.c:140:6:led_command	1
+../Src/parser.c:155:6:echo_command	1
+../Src/parser.c:165:6:oneshot_command	1
+../Src/parser.c:177:6:timer_command	1
+../Src/parser.c:191:6:parse_string	6

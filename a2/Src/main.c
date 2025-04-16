@@ -17,13 +17,34 @@
  */
 
 #include <stdint.h>
+#include "stm32f303xc.h"
+
 #include "serial.h"
+#include "init.h"
+#include "led.h"
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
+int io_test(void)
+{
+	//enable the clock
+	enable_clocks();
 
+	//initialise_board
+	initialise_board();
+
+	// Set the callback function to be called when the button is press (PA0)
+	// When button is pressed, chase_led() will be invoked
+	setting_callback(&chase_led);
+
+	// enable the interrupt for the button
+	enable_interrupt();
+
+    /* Loop forever */
+	for(;;) {}
+}
 
 int main(void) {
 //    test_serial();

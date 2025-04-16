@@ -33,6 +33,6 @@ void set_led(uint8_t state){
 
 // get the led status
 //return: the 8-bit led status value
- void get_led(void){
+ uint8_t get_led(void){
 	 return *led_register; // return the current state of the led
  }
