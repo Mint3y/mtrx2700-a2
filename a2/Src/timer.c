@@ -1,9 +1,29 @@
 #include "timer.h"
 
-struct TIMER_STATE {
+
+static uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
+
+
+static PatternForCallback pattern1 = 0;
+static PatternForNewPeriod pattern2 = 0;
+
+static OneShotCallback oneshot_callback = 0;
+
+static uint8_t *Led_register = 0;
+static int period = 0;
+//static uint8_t *oneshot_led_reg = 0;
+
+int mode = 0; 	// mode 1  = part a and mode 2 = part b
+
+
+
+
+
+
+static struct {
 	TIM_TypeDef* timer;
 	void (*callback)();
-};
+} TIMER_STATE;
 
 // Initialise the timer module.
 void init_timer() {
@@ -71,14 +91,8 @@ void set_timer_base_period(uint32_t value) {
 	TIMER_STATE.timer->ARR = value;
 }
 
-static PatternForCallback pattern1 = 0;
-static PatternForNewPeriod pattern2 = 0;
-static OneShotCallback oneshot_callback = 0;
 
-static uint8_t *Led_register = 0;
-static int period = 0;
-//static uint8_t *oneshot_led_reg = 0;
-int mode = 0; 	// mode 1  = part a and mode 2 = part b
+
 
 
 void trigger_prescaler() {
@@ -91,6 +105,8 @@ void trigger_prescaler() {
 	TIM2->ARR = 0xffffffff;
 
 }
+
+
 
 
 
@@ -181,8 +197,10 @@ void oneshot_timer_start(uint32_t delay_ms, OneShotCallback callback, uint8_t *l
 
 // Interrupt service routine for call back function
 
+
 void TIM2_IRQHandler(void){
 
+	// Update current state for interrupt
 	if(TIM2 -> SR & TIM_SR_UIF){
 
 		// Clear Flag for next update event
@@ -206,7 +224,7 @@ void TIM2_IRQHandler(void){
 	    	}
 		}
 
-
+	// oneshot first pulse
 	 if (TIM2->SR & TIM_SR_CC1IF)
 	    {
 	        // Disable capture/compare flag
@@ -253,7 +271,7 @@ int get_period(){
 
 // Call back function for changing LED patterns
 
-void change_pattern_a(uint8_t * led_reg){
+void change_pattern_a(){
 
 
 	static int count = 0;
@@ -261,7 +279,7 @@ void change_pattern_a(uint8_t * led_reg){
 	// LED pattern array
 	uint8_t pattern_list[] = {0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00};
 
-	*led_reg = pattern_list[count];
+	*led_output_register = pattern_list[count];
 
 	// Count traverse through each index starting from 0 and loops back to start
 	count = (count + 1 ) % 9 ;
@@ -272,29 +290,42 @@ void change_pattern_a(uint8_t * led_reg){
 
 // Alternate LED pattern based on period value
 
-void change_pattern_b(int period){
+//void change_pattern_b(int period){
+//
+//	uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
+//
+//	// LED on for 2 seconds
+//	if (period == 1000){
+//		*led_output_register = 0xFF;
+//		set_period(2000);
+//	}
+//
+//	// LED off for 1 second
+//	else{
+//		*led_output_register = 0x00;
+//		set_period(1000);
+//	}
+//
+//}
 
-	uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
 
-	// LED on for 2 seconds
-	if (period == 1000){
-		*led_output_register = 0xFF;
-		set_period(2000);
-	}
 
-	// LED off for 1 second
-	else{
-		*led_output_register = 0x00;
-		set_period(1000);
-	}
+void change_pattern_b(void){
+
+
+	*led_output_register ^= 0xFF;
 
 }
 
 
-void one_shot_pattern(uint8_t *led_reg)
+void one_shot_pattern(void)
 {
-    *led_reg = 0xFF;
+    *led_output_register = 0xFF;
 }
+
+
+
+
 
 
 
@@ -302,13 +333,13 @@ void one_shot_pattern(uint8_t *led_reg)
 /*Testing Functions */
 
 // Change LED pattern every 2 seconds
-void testa(int period)
+void testa(int period_value)
 {
 
-	uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
+	//uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
 
 
-	initialise_timer_a(period, led_output_register, change_pattern_a);
+	initialise_timer_a(period_value, led_output_register, change_pattern_a);
 	for (;;) {}
 
 
@@ -316,9 +347,9 @@ void testa(int period)
 }
 
 
-void testb(void){
+void testb(int period_value){
 
-	set_period(1000);
+	set_period(period_value);
 
 	int period = get_period();
 
@@ -330,7 +361,7 @@ void testb(void){
 }
 
 
-void testc(int OneShotDelay){
+void testc(int oneshotdelay){
 
 
 	uint32_t on_time = 2000;
@@ -358,13 +389,14 @@ void testc(int OneShotDelay){
 		while (TIM2->CNT < off_time) { }
 
 
-		oneshot_timer_start(OneShotDelay, one_shot_pattern, led_output_register);
+		oneshot_timer_start(oneshotdelay, one_shot_pattern, led_output_register);
 
 		// Delay to observe one shot led
 		for (volatile uint32_t delay = 0; delay < 800000; delay++) { }
 
 		for(;;) {}
 	}
+
 }
 
 
