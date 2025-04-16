@@ -135,9 +135,9 @@ void USART1_EXTI25_IRQHandler(void) {
 	if (USART1_PORT.UART->ISR & USART_ISR_RXNE) {
 		// Clear overrun, noise, frame and parity errors
 		USART1_PORT.UART->ICR |= (USART_ICR_ORECF
-							  |   USART_ICR_NCF
-							  |   USART_ICR_FECF
-							  |   USART_ICR_PECF);
+                              |   USART_ICR_NCF
+                              |   USART_ICR_FECF
+                              |   USART_ICR_PECF);
 
 		// Read a byte and flush the receive request
 		receive_byte();
@@ -414,6 +414,7 @@ void naive_echo(SerialPortBuffer* buf) {
 	serial_write_string(buf->buffer, buf->length, &USART1_PORT);
 }
 
+// Polling based serial example
 void test_serial() {
 	SerialPortBuffer buf = (SerialPortBuffer){{0}, 0, 0, true};
 
@@ -431,6 +432,7 @@ void test_serial() {
 	}
 }
 
+// Interrupt based serial example
 void test_serial_interrupt() {
 	// Serial module initialisation
 	init_serial();
