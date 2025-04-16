@@ -4,7 +4,7 @@
 ../Src/parser.c:89:9:parse_led_arg	5
 ../Src/parser.c:117:9:parse_unsigned_int	4
 ../Src/parser.c:140:6:led_command	1
-../Src/parser.c:155:6:echo_command	1
-../Src/parser.c:165:6:oneshot_command	1
-../Src/parser.c:177:6:timer_command	1
-../Src/parser.c:191:6:parse_string	6
+../Src/parser.c:155:6:echo_command	2
+../Src/parser.c:175:6:oneshot_command	1
+../Src/parser.c:187:6:timer_command	1
+../Src/parser.c:201:6:parse_string	5

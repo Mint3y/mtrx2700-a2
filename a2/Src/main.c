@@ -19,9 +19,11 @@
 #include <stdint.h>
 #include "stm32f303xc.h"
 
-#include "serial.h"
 #include "init.h"
+#include "serial.h"
 #include "led.h"
+
+#include "parser.h"
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
@@ -46,9 +48,23 @@ int io_test(void)
 	for(;;) {}
 }
 
+void full_integration() {
+	// Serial module initialisation
+	init_serial();
+	init_usart();
+	init_serial_port_16bit(BAUD_9600,
+	                       get_usart1_port(),
+						   parse_string);
+	enable_usart1_interrupts();
+	enable_usart1_receive_interrupt();
+
+	while (1) {}
+}
+
 int main(void) {
 //    test_serial();
-	test_serial_interrupt();
+//	test_serial_interrupt();
+	full_integration();
 
     /* Loop forever */
 	for(;;);

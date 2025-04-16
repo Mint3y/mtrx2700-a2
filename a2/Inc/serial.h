@@ -72,6 +72,10 @@ void enable_usart1_transmit_interrupt();
 // Disables triggering interrupts when USART1 transmits a byte.
 void disable_usart1_transmit_interrupt();
 
+// Get the module's USART1 Serial Port.
+// Returns the module's USART1 Serial Port
+SerialPort* get_usart1_port();
+
 // Gets a pointer to the next open transmit buffer. A transmission buffer is 
 // considered open if it is not filled nor immediately transmitting. Marks the
 // obtained buffer as unready (i.e closed).

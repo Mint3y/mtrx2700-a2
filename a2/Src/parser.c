@@ -48,8 +48,8 @@ bool starts_with(char* data,
 // length: The length of the string
 // Returns the command type or INVALID if none were parsed
 enum command_type parse_command_type(char* data, uint32_t length) {
-	// Get the length of the first word in the string
-	uint32_t first_word_length = string_find(data, length, COMMAND_ARG_SPLIT);
+	// Get the length of the first word in the string (including space)
+	uint32_t first_word_length = string_find(data, length, COMMAND_ARG_SPLIT) + 1;
 
 	// Determine the command type using prefixes
 	if (starts_with(data,
@@ -153,10 +153,20 @@ void led_command(char* args, uint32_t length) {
 // The echo command.
 // buf: The serial port buffer
 void echo_command(SerialPortBuffer* buf) {
-	// Echo TODO
+	// Get an open transmission buffer, fail if none are available
+	SerialPortBuffer* transmit_buf = get_open_transmit_buffer();
+	if (transmit_buf == 0x00) {
+		return;
+	}
 
+	// Link the receive buffer to the transmit buffer
+	transmit_buf->buffer_ref = buf;
 
+	// Set start and end indices of transmit
+	transmit_buf->index = SERIAL_COMMAND_NAME_LENGTH;
+	transmit_buf->length = buf->length;
 
+	begin_transmit_ready();
 }
 
 // The oneshot command.
@@ -189,11 +199,8 @@ void timer_command(char* args, uint32_t length) {
 // the serial read completion function.
 // buf: The serial port buffer
 void parse_string(SerialPortBuffer* buf) {
-	// Validate command type
+	// Read command type
 	enum command_type type = parse_command_type(buf->buffer, buf->length);
-	if (type == INVALID) {
-		return;
-	}
 
 	// Execute the command based on type
 	switch (type) {
@@ -220,6 +227,7 @@ void parse_string(SerialPortBuffer* buf) {
 		break;
 
 	default:
+		buf->ready = true;
 		break;
 	}
 }
