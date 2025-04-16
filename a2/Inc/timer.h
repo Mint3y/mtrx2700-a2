@@ -55,7 +55,7 @@ int get_period();
 
 void testa(void);
 void testb(void);
-void testc(void);
+void testc(int OneShotDelay);
 
 #endif
 

@@ -267,7 +267,7 @@ void testb(void){
 }
 
 
-void testc(void){
+void testc(int OneShotDelay){
 
 
 	uint32_t on_time = 2000;
@@ -295,7 +295,7 @@ void testc(void){
 		while (TIM2->CNT < off_time) { }
 
 
-		oneshot_timer_start(1000, one_shot_pattern, led_output_register);
+		oneshot_timer_start(OneShotDelay, one_shot_pattern, led_output_register);
 
 		// Delay to observe one shot led
 		for (volatile uint32_t delay = 0; delay < 800000; delay++) { }

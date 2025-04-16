@@ -176,12 +176,16 @@ void echo_command(SerialPortBuffer* buf) {
 void oneshot_command(char* args, uint32_t length) {
 	// Oneshot TODO
 
-	int32_t delay = parse_unsigned_int(args, length);  // e.g 1000
+	int32_t OneShotDelay = parse_unsigned_int(args, length);  // e.g 1000
 
-	if(delay == INT_PARSING_FAIL){
+	if(OneShotDelay == INT_PARSING_FAIL){
 
 		return;
 	}
+
+	testc(OneShotDelay);
+
+
 
 
 
