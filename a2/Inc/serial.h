@@ -5,16 +5,19 @@
 #include <stdbool.h>
 #include "stm32f303xc.h"
 
+#ifndef SERIAL_BUFFER_SIZE
 #define SERIAL_BUFFER_SIZE 1024
+#endif // SERIAL_BUFFER_SIZE
+
 #define SERIAL_TERMINATOR '*'
 #define BASE_CLOCK (8000000) // 8MHz
 
 // Serial buffer capable of being used for both receiving and transmitting
-typedef struct _SerialPortBuffer {        // Used for receiving      / Used for transmitting
+typedef struct _SerialPortBuffer {            // Used for receiving      / Used for transmitting
 	char buffer[SERIAL_BUFFER_SIZE];      // Buffer to read to       / Buffer to write from
 	struct _SerialPortBuffer* buffer_ref; // NOT USED                / Buffer reference
-	uint32_t index;					      // Number of bytes read    / Number of bytes written
-	uint32_t length;				      // Length of buffer (1024) / Length to write
+	uint32_t index;                       // Number of bytes read    / Number of bytes written
+	uint32_t length;                      // Length of buffer (1024) / Length to write
 	bool ready;                           // Buffer is not reading   / Buffer is not writing
 } SerialPortBuffer;
 
@@ -32,8 +35,8 @@ typedef struct _SerialPort {
 	volatile uint32_t SerialPinAlternatePinValueLow;
 	volatile uint32_t SerialPinAlternatePinValueHigh;
 	void (*read_complete)(SerialPortBuffer*); // When executed this function 
-											  // should mark buffer as ready
-											  // for future use
+                                                  // should mark buffer as ready
+                                                  // for future use
 	void (*write_complete)(SerialPortBuffer*); // Executed at end of transmission
 } SerialPort;
 
@@ -58,8 +61,8 @@ void init_usart();
 // completion_function: Function to execute when completing serial output,
 //                      takes in the number of bytes sent.
 void init_serial_port_16bit(enum BaudRate baud_rate,
-				            SerialPort* serial_port,
-							void (*read_complete)(SerialPortBuffer*));
+                            SerialPort*   serial_port,
+                            void (*read_complete)(SerialPortBuffer*));
 
 // Enables interrupt requests for USART1.
 void enable_usart1_interrupts();
@@ -104,9 +107,9 @@ void default_write_completion(SerialPortBuffer* buf);
 // terminator:  The terminating character to read until
 // buf:         The buffer to read into
 // serial_port: The port to read from
-int serial_read_until_terminator(uint8_t     	   terminator,
-								 SerialPortBuffer* buf,
-		                         SerialPort* 	   serial_port);
+int serial_read_until_terminator(uint8_t           terminator,
+                                 SerialPortBuffer* buf,
+                                 SerialPort*       serial_port);
 
 // Naively writes a char to a serial port. Waits for transmit buffer to be
 // empty with a while loop.
@@ -120,8 +123,10 @@ void serial_write_char(char data, SerialPort* serial_port);
 // serial_port: The port to write to
 void serial_write_string(char* data, uint32_t length, SerialPort* serial_port);
 
+// Polling based serial example
 void test_serial();
 
+// Interrupt based serial example
 void test_serial_interrupt();
 
 #endif // SERIAL_PORT_HEADER
