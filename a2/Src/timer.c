@@ -239,13 +239,13 @@ void one_shot_pattern(uint8_t *led_reg)
 /*Testing Functions */
 
 // Change LED pattern every 2 seconds
-void testa(void)
+void testa(int period)
 {
 
 	uint8_t *led_output_register = ((uint8_t*)&(GPIOE->ODR)) + 1;
 
 
-	initialise_timer_a(2000, led_output_register, change_pattern_a);
+	initialise_timer_a(period, led_output_register, change_pattern_a);
 	for (;;) {}
 
 
