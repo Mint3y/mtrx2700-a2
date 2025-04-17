@@ -192,7 +192,7 @@ set_period(period_value);
 
 Alternatively: Call testb() in main.c 
 
-<H4>Test Case</H4>
+<H4>Test Case:</H4>
 <H4>Testing different delays</H4>
 
   - Input:  initiate_timer(1000, change_pattern)
@@ -234,8 +234,8 @@ Alternatively: Call testc() in main.c
 <H4>Test Case:</H4>
 <H4>Testing different delays</H4>
 
-  - Input:  initiate_timer(1000, change_pattern)
-  - Output: LED’s should cause the LED to blink every 1 second 
+  - Input:  oneshot_timer_start(1000, one_shot_pattern, led_output_register)
+  - Output: LED’s should cause the LED to light all LEDS once 
 
 
 
