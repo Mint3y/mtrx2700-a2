@@ -28,7 +28,7 @@ Timer's are configured as continous and in oneshot mode controlling our LEDS, ..
 
 ## Instructions for Users
 
-[1] How to access and load projects 
+[1] Guide to access and load projects 
 <br> </br>
 1. Ensure the latest "ST-Link drivers" is installed on your chosen device (if needed follow this link to install driver: https://os.mbed.com/teams/ST/wiki/ST-Link-Driver)
 
@@ -54,19 +54,30 @@ Timer's are configured as continous and in oneshot mode controlling our LEDS, ..
 
 <img width="1303" alt="Image" src="https://github.com/user-attachments/assets/f6f496d1-bf48-4e23-862e-1e7456cbd516" />
 
-[2]Instructions to use Cutecom
+
+Note: After launching the debug mode, connect to Cutecom.
+
+[2]Guide to use Cutecom
 <br> </br>
 
-1. Download Cutecom
+1. Install Cutecom
    
-2. Open the application
+2. Launch the application
    
 3. Select connect
 
-![Image](https://github.com/user-attachments/assets/0d5520aa-b567-46e0-a8f5-3b70bb563180)
+<img width="1299" alt="Image" src="https://github.com/user-attachments/assets/2bad9ed9-4a8a-4c9c-a9af-48569e44843a" />
 
-4. Select the desired device and baud rate before hitting open device
+4. Select the desired device and baud rate
+   
+<img width="1307" alt="Image" src="https://github.com/user-attachments/assets/c29dff7e-b533-4720-9c9a-2344e9b7f796" />
 
-![Image](https://github.com/user-attachments/assets/7ea8dd11-80e8-4ba9-b456-2e84afb75d7c)
- 
-5. You will now be able to transmit and receive data from your board
+5. Click open device
+   
+<img width="1305" alt="Image" src="https://github.com/user-attachments/assets/a277ab98-2271-429d-851e-37af17ecc750" /> 
+
+6. Set EOL Char to "None" and optionally split screen presseing on the double arrow icom
+
+<img width="1300" alt="Image" src="https://github.com/user-attachments/assets/2a01508d-d4da-4d74-86ff-d8931add6a51" />
+
+
