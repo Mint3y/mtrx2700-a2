@@ -33,7 +33,7 @@ void enable_timer2_interrupts() {
 	__disable_irq();
 
 	// Set priority and enable interrupt requests for TIM2 in the NVIC
-	NVIC_SetPriority(TIM2_IRQn, 2);
+	NVIC_SetPriority(TIM2_IRQn, 5);
 	NVIC_EnableIRQ(TIM2_IRQn);
 
 	// Re-enable interrupt requests

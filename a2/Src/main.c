@@ -48,7 +48,7 @@ int io_test(void)
 	for(;;) {}
 }
 
-void full_integration() {
+void run_command_prompt() {
 	// LED module init
 	enable_clocks();
 	initialise_board();
@@ -95,9 +95,12 @@ void timer_testc() {
 }
 
 int main(void) {
+//	test_serial();
+//	test_serial_interrupt();
+
 //	timer_testa();
-	timer_testc();
-//	full_integration();
+//	timer_testc();
+	run_command_prompt();
 
     // Loop forever
 	for(;;);

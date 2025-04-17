@@ -147,7 +147,6 @@ void USART1_EXTI25_IRQHandler(void) {
 	if ((USART1_TRANSMIT.transmitting == true)
 	&&  (USART1_PORT.UART->ISR & USART_ISR_TXE)) {
 		transmit_byte();
-		USART1_PORT.UART->RQR |= USART_RQR_TXFRQ;
 	}
 }
 
@@ -232,7 +231,7 @@ void enable_usart1_interrupts() {
 	EXTI->IMR |= EXTI_IMR_MR25; // Enable bit for interrupt line 25
 
 	// Set priority and enable interrupt requests for USART1 in the NVIC
-	NVIC_SetPriority(USART1_IRQn, 1);
+	NVIC_SetPriority(USART1_IRQn, 5);
 	NVIC_EnableIRQ(USART1_IRQn);
 
 	// Re-enable interrupt requests

@@ -142,10 +142,6 @@ void led_command(char* args, uint32_t length) {
 	if (led_arg == PARSE_LED_ARG_FAIL) {
 		// Display a debug message
 		attempt_serial_transmit(LED_FAIL_MESSAGE, LED_FAIL_MESSAGE_LENGTH);
-
-		// Display a debug message and set LEDs to 0x00 (maybe we dont do this)
-		// alternative debug: have all leds flash 3 times before reverting to their previous state
-		// TODO
 	}
 
 	// Set LEDs
