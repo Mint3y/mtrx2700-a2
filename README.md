@@ -40,16 +40,17 @@ Timer's are configured as continous and in oneshot mode controlling our LEDS, ..
 <img width="1297" alt="Image" src="https://github.com/user-attachments/assets/e697a8a9-28e7-415b-b2b0-fa2bed895afb" />
 
 5. Select the desired project folder from your directory.
- ![Image](https://github.com/user-attachments/assets/07443769-289d-417c-8020-bdd395f53d06)
-5. Select finish.
+<img width="1304" alt="Image" src="https://github.com/user-attachments/assets/acf9a7dd-7feb-41c0-b2c5-e03047777c28" />
+
+6. Select finish.
    
- ![Image](https://github.com/user-attachments/assets/1ca9df2c-acb4-4ba8-b99b-07bdb248d538) 
- 
-6. Within the project in the source folder select assembly.s file and click the debug button.
+<img width="1302" alt="Image" src="https://github.com/user-attachments/assets/7b752495-0f33-43a2-aa24-344c07c739d1" /> 
+
+7. Within the project in the source folder select assembly.s file and click the debug button.
 
  ![Image](https://github.com/user-attachments/assets/8d616329-7b3a-4cbd-9536-0d6b6b57365e)
 
-7. Select either the play button to run through the entire code or step through it line by line with the arrow.
+8. Select either the play button to run through the entire code or step through it line by line with the arrow.
 
  ![Image](https://github.com/user-attachments/assets/63089134-5046-4434-84d8-1fa757924fa1)
 
