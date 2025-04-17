@@ -28,14 +28,15 @@ Timer's are configured as continous and in oneshot mode controlling our LEDS, ..
 
 ## Instructions for Users
 
-[1]Instructions to import Projects
+[1] How to access and load projects 
 <br> </br>
+1. Ensure the latest "ST-Link drivers" is installed on your chosen device (if needed follow this link to install driver: https://os.mbed.com/teams/ST/wiki/ST-Link-Driver)
 
-1. Ensure the latest STM32CubeIDE software is downloaded on the chosen device.
+2. Ensure the latest STM32CubeIDE software is installed on your device.
    
-2. Connect the STM32 board to the computer.
+3. Connect the STM32 board to your device.
    
-3. Open the application and select “Import Project”.
+4. Launch the application and select “Import Project”.
  ![Image](https://github.com/user-attachments/assets/75b6f0c1-c893-4c91-bc02-a9e28a2d47f0)
 4. Select the desired project folder from your directory.
  ![Image](https://github.com/user-attachments/assets/07443769-289d-417c-8020-bdd395f53d06)
