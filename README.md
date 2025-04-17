@@ -84,6 +84,64 @@ Note: After launching the debug mode, connect to Cutecom.
 
 ## Part 1: Digital I/O
 
+Init Module introduction:
+The init module provides hardware initialization for the STM32F3 board. Its main function is to configure the GPIO peripheral clock, set PE8-PE15 to the LED-controlled output pin and PA0 to the rising-edge triggered external interrupt with a callback function.
+The init module is the first module called by the main () and ensures that all peripheral components are enabled and initialized.
+
+### Public Module Components
+
+<details>
+<summary>Initialization functions</summary>
+	
+```c
+void enable_clocks(void)
+void initialise_board(void)
+void enable_interrupt(void)
+void setting_callback(void(*callback)(void))
+```
+The `enable_clocks` represents the AHB peripheral clocks for desired peripherals (GPIOA,C and E).
+The `initialise_board` Set the pins PE8-15 as the universal output. These pins are used to control the led. The MODER register is set to 01(Output).
+The `enable_interrupt` represents the PA0 button is configured as an external interrupt input with rising edge logic.
+The `setting_callback` set the callback function when the PA0 Button is pressed
+</details>
+
+LED Module introduction:
+The led module is responsible for controlling the eight leds connected to the GPIO pins PE8-15 on the STM32F3 board. The module provides an encapsulated interface for setting the LED state using an 8-bit value, retrieving the current LED state, and performing a "chase" procedure where the LED on bit moves one bit to the left after each trigger.
+The module uses the Get/Set Function to avoid direct access to hardware registers outside the module.
+<details>
+<summary>LED functions</summary>
+	
+```c
+void chase_led(void)
+void set_led(uint8_t state)
+uint8_t get_led(void)
+```
+The ‘chase_led’ move the LED state one bit to the left to create a moving "chase" effect. If the state changes to 0 (the light is not on), it is reset to 0x01 and the light is restarted from PE8.
+The ‘set_led’ setting the led status(PE8-15)within 8 bit value; status of 8-bit value: each bit represents one LED (ON=1,OFF=0).
+The ‘get_led’ returns the 8-bit LED state value stored internally.
+</details>
+
+### Testing
+Overview: The testing part tests whether each module can work normally and cooperate with each other by initializing the STM32F3 system, activating interrupts and the behavior of Chase LED
+
+Test Case: Initial LED Setup
+Input:Call the enable_clocks() and initialise_board()in the main function and upload to the STM32F3
+Output:All LEDs (PE8-15) are OFF initially and the value of GPIOE->ODR is 0.
+
+Test Case: Rise-edge trigger of button
+Input: Pressing button and holding.
+Output:Observing the LEDs change;Phenomenon: When the button PA0 is pressed an instant LED is on or left shift, releasing the button should not change the state of LED.
+
+Test Case: LED chase
+Input: Pressing the PA0 button.
+Output: The LED can be shifted one unit to the left. Chase logic from PE8 to PE15. When the LED PE15 is on and press the button the LED will move to PE8. The value of led_register will change when LED change
+
+Test Case: Setting LED bitmask via command
+Input: Use CuteComm2 to establish serial communication with STM32F3 and send led 11111111* command.
+Output:The corresponding bit LED ON, for example: led 11111111* will light all leds PE8-15.But if you enter an invalid command such as led 01Hello0*, the LED will not output.
+
+
+
 ## Part 2: Serial Communication
 
 The serial module consists of two main sections: receive and transmit. Functions are available to perform these procedures using either a polling based approach and interrupt based approach depending on the user’s use case.
