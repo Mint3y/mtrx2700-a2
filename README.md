@@ -46,13 +46,13 @@ Timer's are configured as continous and in oneshot mode controlling our LEDS, ..
    
 <img width="1302" alt="Image" src="https://github.com/user-attachments/assets/7b752495-0f33-43a2-aa24-344c07c739d1" /> 
 
-7. Within the project in the source folder select assembly.s file and click the debug button.
+7. Within the project in the source folder select main.c file and click the debug button (Green beetle icon).
 
- ![Image](https://github.com/user-attachments/assets/8d616329-7b3a-4cbd-9536-0d6b6b57365e)
+<img width="1304" alt="Image" src="https://github.com/user-attachments/assets/8caa2e5b-81ea-424a-b6c9-e4b2b1bbc5d8" />
 
 8. Select either the play button to run through the entire code or step through it line by line with the arrow.
 
- ![Image](https://github.com/user-attachments/assets/63089134-5046-4434-84d8-1fa757924fa1)
+<img width="1303" alt="Image" src="https://github.com/user-attachments/assets/f6f496d1-bf48-4e23-862e-1e7456cbd516" />
 
 [2]Instructions to use Cutecom
 <br> </br>
