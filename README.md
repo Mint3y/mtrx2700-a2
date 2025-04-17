@@ -57,6 +57,7 @@ Timer's are configured as continous and in oneshot mode controlling our LEDS, ..
 
 Note: After launching the debug mode, connect to Cutecom.
 
+
 [2]Guide to use Cutecom
 <br> </br>
 
@@ -83,7 +84,122 @@ Note: After launching the debug mode, connect to Cutecom.
 
 ## Part 1: Digital I/O
 
-## Part 2: Serial Interface
+## Part 2: Serial Communication
+
+The serial module consists of two main sections: receive and transmit. Functions are available to perform these procedures using either a polling based approach and interrupt based approach depending on the user’s use case.
+
+The receive part of the module uses a double buffer to allow incoming bytes while another area of the program uses the previously read buffer to perform a user defined operation. This is only accessible via the interrupt based approach.
+
+The transmit part also uses a double buffer to allow queuing of multiple transmission messages. This is only accessible via the interrupt based approach and is especially useful when transmitting messages in quick succession.
+
+### Public Module Components
+The following structs, enums and constants are publicly available to be used with the serial module.
+
+<details>
+<summary>Structs, Enums, Constants</summary>
+	
+```c
+SerialPortBuffer (struct _SerialPortBuffer)
+SerialPort (struct _SerialPort)
+enum BaudRate
+SERIAL_BUFFER_SIZE (definition)
+SERIAL_TERMINATOR (definition)
+```
+The `SerialPortBuffer` represents either the receive or transmission buffer for USART. `SerialPort` is a grouping of the actual USART port addresses. A `BaudRate` value can be passed while initialising a serial port to set a custom baud rate.
+
+The constants SERIAL_BUFFER_SIZE and SERIAL_TERMINATOR can be defined prior to including the module to set a custom buffer size and custom serial terminating character respectively.
+</details>
+
+
+### Public Module Functions
+The following list of serial functions are publicly available from other files/modules.
+
+<details>
+<summary>Initialisation functions</summary>
+	
+```c
+void init_serial();
+void init_usart();
+void init_serial_port_16bit(
+        enum BaudRate baud_rate,
+        SerialPort* serial_port,
+        void (*read_complete)(SerialPortBuffer*)
+);
+```
+These should all be called prior to use of the module. When calling `init_serial_port_16bit` it is useful to pass in the usart1 port reference from `get_usart1_port()`. A custom read completion function can be passed during port initialisation to create more advanced functionality. A write completion callback can be set after port initialisation, otherwise it comes with a default callback function. Read and write callback functions regardless of the module’s approach (polling/interrupt).
+
+The `init_serial` function is not required to be called if the module is planned to be used in a purely polling based approach.
+</details>
+
+<details>
+<summary>Toggles, getters and setters</summary>
+	
+```c
+void enable_usart1_interrupts();
+void enable_usart1_receive_interrupt();
+void enable_usart1_transmit_interrupt();
+void disable_usart1_transmit_interrupt();
+SerialPort* get_usart1_port();
+SerialPortBuffer* get_open_transmit_buffer();
+void set_write_completion(void write_completion(SerialPortBuffer*));
+```
+If the interrupt based approach will be used then the user should call `enable_usart1_interrupts` and `enable_usart1_receive_interrupt`. The transmit interrupt enable/disable will be automatically called by the module as required. See description of `Initialisation functions` for further information on the getters and setters.
+
+`get_open_transmit_buffer` will return either `NULL (0x00)` or a reference to a `SerialPortBuffer` struct which is not actively being used for transmission. This buffer should be filled with user defined contents before beginning transmission (see `Transmitting and receiving`).
+</details>
+
+<details>
+<summary>Transmitting and receiving</summary>
+	
+```c
+void begin_transmit_ready();
+void attempt_serial_transmit(char* data, uint32_t length);
+int serial_read_until_terminator(
+        uint8_t terminator,
+        SerialPortBuffer* buf,
+        SerialPort* serial_port
+);
+void serial_write_char(char data, SerialPort* serial_port);
+void serial_write_string(char* data, uint32_t length, SerialPort* serial_port);
+```
+If a previous call to `enable_usart1_receive_interrupt` had been made, the module will internally receive all incoming bytes from a serial port. The user should supply a read completion callback function to access data that is received via this port.
+
+`begin_transmit_ready` will begin transmission of the transmit ready buffer within the module. This will typically be called after filling a transmit buffer received by a call to `get_open_transmit_buffer`.
+
+`attempt_serial_transmit` wraps the transmit operation into one neat function, but depending on use case may not be sufficient. If the interrupt based approach is to be used then this function may be too inefficient for the user’s needs as it copies an entire string into an open transmit buffer (if available) before transmitting.
+
+`serial_read_until_terminator` is a polling-based receiving function that receives bytes until a given terminator character is read. It halts the program within itself until this terminator is read from the serial port.
+
+`serial_write_char` is a polling-based transmission function which waits for the transmit buffer to be empty before transmitting a byte. This should not be used in conjunction with the interrupt based transmission functions to avoid undefined functionality (overwriting bytes that would have been transmitted otherwise).
+
+`serial_write_string` is a polling-based transmission function for strings. It is a wrapper for `serial_write_char`.
+</details>
+
+<details>
+<summary>Miscellaneous</summary>
+	
+```c
+void default_write_completion(SerialPortBuffer* buf);
+void test_serial();
+void test_serial_interrupt();
+```
+`default_write_completion` can be accessed to reset the write completion function of a serial port. The other two test functions provide examples of how to use the serial module.
+</details>
+
+### Testing
+Example test cases can be found in the functions referred to in the `Miscellaneous` section. These functions set USART1’s port callback to an echo function and are expected to echo back (via transmit) anything that the board receives.
+```
+Input:                     |   Output:
+---------------------------------------------------------
+Some string*               |   Some string
+not a command*             |   not a command
+Hello World Domination!*   |   Hello World Domination!
+Incomplete receive         |   
+continue*                  |   Incomplete receivecontinue
+```
+
+The double buffer implementation can be tested by attempting multiple transmissions in quick succession. Simply, this means calling `attempt_serial_transmit` multiple times with different inputs. As the double buffer is only capable of queuing two transmit messages, any sequential messages that are attempted prior to the first one being fully transmitted should fail silently. The functionality of the double buffer has been tested in the `Command Prompt` module. The double buffer implementation is identical for both transmit and receive.
+
 
 ## Part 3: Timed Functionality
 
