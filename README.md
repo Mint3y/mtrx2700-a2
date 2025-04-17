@@ -37,8 +37,9 @@ Timer's are configured as continous and in oneshot mode controlling our LEDS, ..
 3. Connect the STM32 board to your device.
    
 4. Launch the application and select “Import Project”.
- ![Image](https://github.com/user-attachments/assets/75b6f0c1-c893-4c91-bc02-a9e28a2d47f0)
-4. Select the desired project folder from your directory.
+<img width="1297" alt="Image" src="https://github.com/user-attachments/assets/e697a8a9-28e7-415b-b2b0-fa2bed895afb" />
+
+5. Select the desired project folder from your directory.
  ![Image](https://github.com/user-attachments/assets/07443769-289d-417c-8020-bdd395f53d06)
 5. Select finish.
    
