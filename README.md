@@ -454,5 +454,79 @@ Alternatively: Call testc() in main.c
   - Input:  oneshot_timer_start(1000, one_shot_pattern, led_output_register)
   - Output: LED’s should cause the LED to light all LEDS once 
 
+## Part 4: Command Prompt (Parser)
+This module incorporates the functionality of all previous modules by reading commands through serial input and executing valid commands. We implement 4 commands with varying functionality to test all previous modules. These commands can be found in the `Commands` section below.
+
+### Public Module Components
+The following enums and constants are publicly available to be used with the command prompt (parser) module.
+
+<details>
+<summary>Enums, Constants</summary>
+
+```c
+enum command_type
+INT_PARSING_FAIL (definition)
+COMMAND_ARG_SPLIT (definition)
+```
+The enum of command types represents all possible commands parsed by the command prompt module.
+If `COMMAND_ARG_SPLIT` is defined to a char prior to the module being included, it will be used as a command separator in place of the default space `’ ‘` separator character.
+
+</details>
+
+### Public Module Functions
+<details>
+<summary>Utility (string)</summary>
+
+```c
+uint32_t string_find(char* data, uint32_t length, char terminator);
+bool starts_with(char* data, uint32_t length, char* prefix, uint32_t prefix_length);
+int32_t parse_unsigned_int(char* data, uint32_t length);
+```
+These functions assist in the parsing of strings by: obtaining the index of the first occurrence of a character, checking if a string starts with a prefix and converting a string into an unsigned integer.
+If the string could not be converted into an unsigned integer the `parse_unsigned_int` function will return `INT_PARSING_FAIL`.
+
+</details>
+
+<details>
+<summary>Command Parsing</summary>
+
+```c
+enum command_type parse_command_type(char* data, uint32_t length);
+int16_t parse_led_arg(char* args, uint32_t length);
+void parse_string(SerialPortBuffer* buf);
+```
+These functions are used to parse strings and determine command types or command related arguments. The `parse_string` function should be used as a read completion callback in the `Serial Communication` module to immediately read commands as they come in through a serial port.
+
+</details>
+
+<details>
+<summary>Commands</summary>
+
+```c
+void led_command(char* args, uint32_t length);
+void echo_command(SerialPortBuffer* buf);
+void oneshot_command(char* args, uint32_t length);
+void timer_command(char* args, uint32_t length);
+void revolve_callback();
+void set_oneshot_command_callback(void (*callback)());
+void set_timer_command_callback(void (*callback)());
+```
+These functions isolate the commands which are run by the command prompt. They are custom defined to: set STM32F3 Discovery board LEDs into a given pattern, echo a string through serial, perform a oneshot timer action and perform a recurring timer action respectively. Further details on their operation can be found in the source code.
+
+The set commands can be used to modify the callback to be executed when the oneshot/timer triggers. `revolve_callback` is an example of this and rotates the board LEDs by 1 position.
+</details>
+
+### Testing
+The command prompt was intended to be completely interrupt based. Testing was performed by initialising all modules and enabling all interrupts, then sending commands into the STM32F3 Discovery board via the USART1 serial port. To conclude testing we validated the board reactions to given commands and set the oneshot and recurring timer commands to rotate all LEDs by 1 space.
+
+```
+Input:                 |   Output:
+---------------------------------------------------------
+serial Hello World!*   |   Hello World!
+not a command*         |   INVALID COMMAND: not a command
+led 11110000*          |   
+```
+**Note:** Commands other than serial do not write any output.
+
 
 
