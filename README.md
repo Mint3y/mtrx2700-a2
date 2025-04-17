@@ -143,8 +143,7 @@ Alternatively: Call testa() in main.c
   - Output: LED’s should alternate pattern every 4 seconds   
 
 
-
-<H4>Part b: Alternative Continuous Timer Module<\H4> This module uses encapsulation for the timer period such that no external module can modify the hardware timer registers directly. A setter function (set_period) and getter function (get_period) updates and retrieves the static variable (period) respectively. This variable is used to set the ARR and reset the counter.
+<H4>Part b: Alternative Continuous Timer Module</H4> This module uses encapsulation for the timer period such that no external module can modify the hardware timer registers directly. A setter function (set_period) and getter function (get_period) updates and retrieves the static variable (period) respectively. This variable is used to set the ARR and reset the counter.
 <br> </br>
 <pre> 
 Main file Modular Design
@@ -232,7 +231,7 @@ TIM2_IRQHandler:
 </pre> 
 Alternatively: Call testc() in main.c 
 
-<H4>Test Case</H4>
+<H4>Test Case:</H4>
 <H4>Testing different delays</H4>
 
   - Input:  initiate_timer(1000, change_pattern)
