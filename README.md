@@ -81,3 +81,162 @@ Note: After launching the debug mode, connect to Cutecom.
 <img width="1300" alt="Image" src="https://github.com/user-attachments/assets/2a01508d-d4da-4d74-86ff-d8931add6a51" />
 
 
+## Part 1: Digital I/O
+
+## Part 2: Serial Interface
+
+## Part 3: Timed Functionality
+
+<H4>Part a: Continuous Timer Module</H4> The period of the timer is passed during initialisation of the module (initialise_timer) as well as a desired callback function (change_pattern).This function configures timer (TIM2) such that the duration of each clock tick is 1ms. When the elapsed period is determined by the counter reaching the value stored in auto‑reload register (ARR), an update interrupt is triggered triggering the callback allowing the leds to toggle states at regular intervals.
+<br> </br>
+<pre> 
+
+Main file Modular Design
+Change_pattern:
+Initialise count variable 
+	Initialise array of led patterns in hex
+	Increment count variable
+
+Main:
+	Enable Clock
+	Initialise Board
+	Initialise Timer(timerinterval)
+
+
+Timer module file Modular Design
+
+Initialise_timer:
+	Sets callback to static variable 
+	Configure Prescaler
+	Configure Timer Period
+	Generate Interrupt Request
+	Enable Interrupt Request
+	Start Timer Count
+
+TIM2_IRQHandler:
+	Clear Update Flag
+	Call Callback Function
+
+</pre>
+
+<H4>User Instructions</H4>
+1. Enable peripherals and initialise the board
+<pre> 
+	enable_clocks();
+	initialise_board();
+</pre> 
+
+2. Call initialise_timer with preferred timer interval, memory address of led output register and the callback function
+
+	initialise_timer(timerinterval, led_output_register, change_pattern);
+
+Alternatively: Call testa() in main.c 
+
+
+<H4>Test Case</H4>
+<H4>Testing different delays</H4>
+
+  - Input: initialise_timer(2000, led_output_register, change_pattern)
+  - Output: LED’s should alternate pattern every 2 seconds 
+
+  - Input: initialise_timer(4000, led_output_register, change_pattern)
+  - Output: LED’s should alternate pattern every 4 seconds   
+
+
+
+<H4>Part b: Alternative Continuous Timer Module<\H4> This module uses encapsulation for the timer period such that no external module can modify the hardware timer registers directly. A setter function (set_period) and getter function (get_period) updates and retrieves the static variable (period) respectively. This variable is used to set the ARR and reset the counter.
+<br> </br>
+<pre> 
+Main file Modular Design
+Change_pattern:
+	Alternate pattern based on period value
+	
+Main:
+	Enable Clock
+	Initialise Board
+	Set period
+	Get period
+	Initiate Timer(period)
+
+Timer module file Modular Design
+Set_period:
+	Set static period to parameter value
+Set ARR to period
+Reset timer
+
+get_period:
+Returns period
+
+Initiate_timer:
+(same as part a)
+
+TIM2_IRQHandler:
+	(same as part a)
+
+</pre>
+
+
+<H4>User Instructions</H4>
+1. Enable peripherals and initialise the board
+<pre> 
+	enable_clocks();
+	initialise_board();
+</pre> 
+2. Set period value 
+<pre> 
+set_period(period_value);
+</pre> 
+3. Call initiate_timer with preferred timer interval, and the callback function
+<pre>
+	initiate_timer(period, change_pattern)
+</pre> 
+
+Alternatively: Call testb() in main.c 
+
+<H4>Test Case</H4>
+<H4>Testing different delays</H4>
+
+  - Input:  initiate_timer(1000, change_pattern)
+  - Output: LED’s should cause the LED to blink every 1 second 
+
+
+
+<H4>Part c: One-shot Timer Module</H4> This function configures the timer (TIM2) in one-pulse mode, such that when the count reaches the capture/compare register (CCR1) value an interrupt is generated.This interrupt calls the callback function to toggle the lEDs exactly once (one-shot event) after the specified delay unless retriggered.
+
+<br> </br>
+<pre> 
+Main file Modular Design
+
+
+Timer module file Modular Design
+Oneshot_timer_start:
+	(same as part a) except;
+	One pulse mode is enabled for timer
+
+TIM2_IRQHandler:
+(Same as part a)	
+
+
+</pre>
+
+<H4>User Instructions</H4>
+1. Enable peripherals and initialise the board
+<pre> 
+	enable_clocks();
+	initialise_board();
+</pre> 
+
+2. Call oneshot_timer_start with preferred delay, pointer to LED output and the callback function
+<pre>
+	oneshot_timer_start(delay, one_shot_pattern, led_output_register)
+</pre> 
+Alternatively: Call testc() in main.c 
+
+<H4>Test Case</H4>
+<H4>Testing different delays</H4>
+
+  - Input:  initiate_timer(1000, change_pattern)
+  - Output: LED’s should cause the LED to blink every 1 second 
+
+
+
